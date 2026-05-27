@@ -1,0 +1,248 @@
+%!TEX program = xelatex
+% ============================================================
+%  הרצאה 2 — מבוא לכוחות וחוקי ניוטון
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\tcbset{
+  resultbox/.style={
+    enhanced, colback=white, colframe=black,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+  },
+  notebox/.style={
+    enhanced, breakable,
+    colback=gray!8, colframe=gray!50,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+    fonttitle=\bfseries,
+  },
+  warnbox/.style={
+    enhanced, breakable,
+    colback=red!5, colframe=red!60,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+  defbox/.style={
+    enhanced, breakable,
+    colback=blue!5, colframe=blue!50,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing}
+\usepackage[a4paper, top=2cm, bottom=2cm,
+            left=2cm, right=2cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.3}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}[\titlerule]
+\titleformat{\subsection}{\bfseries}{\thesubsection}{0.5em}{}
+
+\setlength{\headheight}{15pt}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textenglish{\textbf{Lecture 2 --- Newton's Laws}}}
+\lhead{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{hebrew}
+\setotherlanguage{english}
+\setmainfont{Times New Roman}
+\newfontfamily\hebrewfont{Times New Roman}
+\newfontfamily\englishfont{Times New Roman}
+\newfontfamily\hebrewfonttt{Courier New}
+
+\newcommand{\hvec}[1]{\overrightarrow{#1}}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ── Title ────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries הרצאה 2 --- מבוא לכוחות וחוקי ניוטון}\\[6pt]
+  \rule{\linewidth}{0.8pt}
+\end{center}
+\vspace{0.5cm}
+
+% ============================================================
+\section*{1. מבוא: מהו כוח?}
+% ============================================================
+
+הקינמטיקה (הרצאה 1) תיארה תנועה אך לא הסבירה \textbf{מה גורם לה}. זהו תפקיד הדינמיקה.
+
+\begin{tcolorbox}[warnbox, title={בעיית ההגדרה המעגלית}]
+ניסיון נאיבי: \emph{"כוח הוא מה שגורם לתאוצה"}.\\
+אבל אז התאוצה מוגדרת על-ידי כוח, וכוח על-ידי תאוצה --- \textbf{הגדרה מעגלית}.\\[3pt]
+פתרונו של ניוטון: לקבוע \textbf{חוקים} (אקסיומות) המאפיינים את התנהגות הכוחות, ולאמת אותם אמפירית.
+\end{tcolorbox}
+
+% ============================================================
+\section*{2. החוק השלישי של ניוטון}
+% ============================================================
+
+\begin{tcolorbox}[defbox, title={חוק שלישי}]
+אם גוף \textenglish{$A$} מפעיל כוח \textenglish{$\hvec{F}$} על גוף \textenglish{$B$},\\
+אזי גוף \textenglish{$B$} מפעיל כוח \textenglish{$-\hvec{F}$} על גוף \textenglish{$A$}.\\[3pt]
+שני הכוחות שווים בגודלם, מנוגדים בכיוונם, ופועלים על \textbf{גופים שונים}.
+\end{tcolorbox}
+
+\subsection*{2.1 דוגמה: קופסה על שולחן}
+
+על הקופסה פועלים שני כוחות:
+\textenglish{$m\hvec{g}$} כלפי מטה (משיכת כדור הארץ), ו-\textenglish{$\hvec{N}$} כלפי מעלה (כוח הנורמל מהשולחן).
+
+\begin{center}
+\begin{tikzpicture}[scale=1.3, >={Stealth[length=2.5mm]}]
+  % surface
+  \draw[thick] (-2.5, 0) -- (2.5, 0);
+  \foreach \x in {-2.3,-1.9,-1.5,-1.1,-0.7,-0.3,0.1,0.5,0.9,1.3,1.7,2.1} {
+    \draw[thick] (\x, 0) -- (\x - 0.25, -0.3);
+  }
+  % block
+  \draw[thick, fill=blue!15] (-0.7, 0) rectangle (0.7, 1.2);
+  \fill (0, 0.6) circle (1.6pt);
+  % N arrow (up)
+  \draw[->, very thick, green!55!black] (0, 0.6) -- (0, 2.1);
+  \node[green!55!black, right] at (0.08, 1.7) {\textenglish{$\hvec{N}$}};
+  % mg arrow (down)
+  \draw[->, very thick, red] (0, 0.6) -- (0, -0.9);
+  \node[red, right] at (0.08, -0.45) {\textenglish{$m\hvec{g}$}};
+\end{tikzpicture}
+\end{center}
+
+\begin{tcolorbox}[warnbox, title={שגיאה נפוצה}]
+\textenglish{$\hvec{N}$} ו-\textenglish{$m\hvec{g}$} שווים בגודלם ומנוגדים, אבל \textbf{הם אינם זוג של חוק שלישי}!\\[3pt]
+שניהם פועלים על \textbf{אותו גוף} (הקופסה). חוק שלישי מקשר תמיד בין כוחות הפועלים על \textbf{שני גופים שונים}.
+\end{tcolorbox}
+
+\subsection*{2.2 הזוג הנכון של חוק שלישי}
+
+הכוח \textenglish{$m\hvec{g}$} שכדור הארץ מפעיל על הקופסה מותאם, לפי החוק השלישי, לכוח שווה ומנוגד שהקופסה מפעילה על כדור הארץ.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2, >={Stealth[length=2.5mm]}]
+  % Earth
+  \draw[thick, fill=blue!25] (0, 0) circle (1.2);
+  \node at (0, -0.05) {\small כדור הארץ};
+  % Ball above
+  \fill[gray!70!black] (0, 3.2) circle (0.18);
+  \node[right] at (0.25, 3.2) {קופסה};
+  % Force on ball (downward, from ball toward Earth)
+  \draw[->, very thick, red] (0, 3) -- (0, 1.9);
+  \node[red, right] at (0.1, 2.45) {\textenglish{$m\hvec{g}$}};
+  % Force on Earth (upward, from Earth's center toward ball)
+  \draw[->, very thick, blue!70!black] (0, 0) -- (0, 1.0);
+  \node[blue!70!black, right] at (0.1, 0.5) {\textenglish{$-m\hvec{g}$}};
+\end{tikzpicture}
+\end{center}
+
+(ההשפעה על תנועת כדור הארץ זניחה, בגלל המסה האדירה שלו.)
+
+% ============================================================
+\section*{3. מתקף הכוח (\textenglish{Impulse})}
+% ============================================================
+
+\begin{tcolorbox}[defbox, title={מתקף}]
+המתקף של כוח \textenglish{$\hvec{F}(t)$} בקטע זמן \textenglish{$[t_1, t_2]$} הוא האינטגרל:
+\[
+  \hvec{I} = \int_{t_1}^{t_2} \hvec{F}(t)\,dt
+\]
+\end{tcolorbox}
+
+המתקף הוא \textbf{וקטור}, ויחידותיו \textenglish{N$\cdot$s}.
+
+% ============================================================
+\section*{4. מערכת סגורה: כוחות פנימיים וחיצוניים}
+% ============================================================
+
+\begin{tcolorbox}[defbox, title={מערכת סגורה}]
+אוסף גופים המשפיעים זה על זה בלבד --- ללא כוחות חיצוניים.
+\end{tcolorbox}
+
+\textbf{הבחנה בין סוגי כוחות:}
+\begin{itemize}
+  \item \textbf{כוח פנימי} --- בין שני גופים השייכים למערכת.
+  \item \textbf{כוח חיצוני} --- מופעל ממקור מחוץ למערכת.
+\end{itemize}
+
+\medskip
+
+\textbf{החוק השלישי בניסוח של מתקפים:} עבור זוג גופים \textenglish{$A, B$} במערכת סגורה,
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{I}_{A \to B}(t) = -\hvec{I}_{B \to A}(t)
+  \qquad \text{בכל זמן}
+\]
+\end{tcolorbox}
+
+המתקף שמפעיל \textenglish{$A$} על \textenglish{$B$} שווה ומנוגד למתקף ש-\textenglish{$B$} מפעיל על \textenglish{$A$}.
+
+% ============================================================
+\section*{5. החוק השני של ניוטון}
+% ============================================================
+
+מתצפיות ניסיוניות: הכוח הכולל הפועל על גוף יוצר תאוצה \textbf{פרופורציונית} לו, באותו כיוון:
+\[
+  \hvec{F} \;\propto\; \hvec{a}
+\]
+
+מקדם הפרופורציה הוא תכונה של הגוף וקרוי \textbf{מסה}.
+
+\begin{tcolorbox}[resultbox, title={החוק השני}]
+\[
+  \hvec{F} = m\hvec{a}
+\]
+\end{tcolorbox}
+
+\textbf{משמעות הפרופורציה:} באותו כוח, גוף עם מסה גדולה יותר יתאיץ \textbf{פחות} --- \textenglish{$\hvec{a} = \hvec{F}/m$}.
+
+% ============================================================
+\section*{6. מסה}
+% ============================================================
+
+\begin{tcolorbox}[defbox, title={מסה}]
+\textbf{תכונה סקלרית חיובית} של גוף, המבטאת את התנגדותו לשינוי במצב תנועתו (\textbf{אינרציה}).\\[3pt]
+ככל שהמסה גדולה יותר, נדרש כוח גדול יותר כדי לייצר אותה תאוצה.
+\end{tcolorbox}
+
+\textbf{תכונות:}
+\begin{itemize}
+  \item \textbf{אדיטיביות (בקירוב טוב):} מסת מערכת = סכום מסות חלקיה. הקירוב נובע מהאטומיות של החומר.
+  \item המסה היא תכונה אינהרנטית של הגוף ואינה תלויה במיקומו או בתנועתו.
+\end{itemize}
+
+% ============================================================
+\section*{7. יחידות}
+% ============================================================
+
+\textbf{יחידת מסה:} ק"ג (\textenglish{kg}) במערכת \textenglish{SI}.
+
+\textbf{יחידת כוח:} מהחוק השני,
+\[
+  [F] = [m]\cdot[a] = \text{kg}\cdot\text{m}\cdot\text{s}^{-2}
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  1\;\text{N} \equiv 1\;\text{kg}\cdot\text{m}\cdot\text{s}^{-2}
+  \qquad (\text{ניוטון})
+\]
+\end{tcolorbox}
+
+\end{document}
