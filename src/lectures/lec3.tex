@@ -1,0 +1,455 @@
+%!TEX program = xelatex
+% ============================================================
+%  הרצאה 3 — תנע, שימור התנע, וכוחות בטבע
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\tcbset{
+  resultbox/.style={
+    enhanced, colback=white, colframe=black,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+  },
+  notebox/.style={
+    enhanced, breakable,
+    colback=gray!8, colframe=gray!50,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+    fonttitle=\bfseries,
+  },
+  warnbox/.style={
+    enhanced, breakable,
+    colback=red!5, colframe=red!60,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+  defbox/.style={
+    enhanced, breakable,
+    colback=blue!5, colframe=blue!50,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing, patterns}
+\usepackage[a4paper, top=2cm, bottom=2cm,
+            left=2cm, right=2cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.3}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}[\titlerule]
+\titleformat{\subsection}{\bfseries}{\thesubsection}{0.5em}{}
+
+\setlength{\headheight}{15pt}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textenglish{\textbf{Lecture 3 --- Momentum \& Forces}}}
+\lhead{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{hebrew}
+\setotherlanguage{english}
+\setmainfont{Times New Roman}
+\newfontfamily\hebrewfont{Times New Roman}
+\newfontfamily\englishfont{Times New Roman}
+\newfontfamily\hebrewfonttt{Courier New}
+
+\newcommand{\hvec}[1]{\overrightarrow{#1}}
+
+% ============================================================
+% Reusable stick figure macros (templates)
+% ============================================================
+% Child standing (passive pose, arms slightly out).
+% Usage inside a tikzpicture: \childStanding{x}{y}{scale}
+\newcommand{\childStanding}[3]{%
+  \begin{scope}[shift={(#1, #2)}, scale=#3, line width=0.8pt]
+    \draw[fill=orange!25] (0, 1.6) circle (0.22);                % head
+    \fill (-0.08, 1.66) circle (0.022);                          % left eye
+    \fill ( 0.08, 1.66) circle (0.022);                          % right eye
+    \draw (-0.08, 1.52) .. controls (0, 1.48) .. (0.08, 1.52);   % smile
+    \draw (0, 1.38) -- (0, 0.55);                                % body
+    \draw (0, 1.20) -- (-0.28, 0.80);                            % left arm
+    \draw (0, 1.20) -- ( 0.28, 0.80);                            % right arm
+    \draw (0, 0.55) -- (-0.20, 0);                               % left leg
+    \draw (0, 0.55) -- ( 0.20, 0);                               % right leg
+  \end{scope}
+}
+
+% Child stick figure throwing a ball to the right.
+% Usage inside a tikzpicture: \childThrowingRight{x}{y}{scale}
+%   x, y  -- position of the figure's feet (between the legs)
+%   scale -- size multiplier (1.0 is default; ~0.8-1.2 typical)
+\newcommand{\childThrowingRight}[3]{%
+  \begin{scope}[shift={(#1, #2)}, scale=#3, line width=0.8pt]
+    \draw[fill=orange!25] (0, 1.6) circle (0.22);                % head
+    \fill (-0.08, 1.66) circle (0.022);                          % left eye
+    \fill ( 0.08, 1.66) circle (0.022);                          % right eye
+    \draw (-0.08, 1.52) .. controls (0, 1.48) .. (0.08, 1.52);   % smile
+    \draw (0, 1.38) -- (0, 0.55);                                % body
+    \draw (0, 1.20) -- ( 0.65, 1.15);                            % throwing arm
+    \draw (0, 1.20) -- (-0.22, 0.75);                            % other arm
+    \draw (0, 0.55) -- (-0.20, 0);                               % left leg
+    \draw (0, 0.55) -- ( 0.20, 0);                               % right leg
+  \end{scope}
+}
+% For a left-throwing child, call inside [xscale=-1]:
+%   \begin{scope}[xscale=-1] \childThrowingRight{-x}{y}{scale} \end{scope}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ── Title ────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries הרצאה 3 --- תנע, שימור התנע, וכוחות בטבע}\\[6pt]
+  \rule{\linewidth}{0.8pt}
+\end{center}
+\vspace{0.5cm}
+
+% ============================================================
+\section*{1. הקשר בין מתקף לחוק השני: התנע}
+% ============================================================
+
+נחבר את שתי המסקנות מההרצאה הקודמת. נתחיל מחוק שני,
+\[
+  \hvec{F} = m\hvec{a}
+\]
+ונבצע אינטגרציה לפי הזמן בקטע \textenglish{$[t_1, t_2]$}:
+\[
+  \int_{t_1}^{t_2} \hvec{F}\,dt = \int_{t_1}^{t_2} m\hvec{a}\,dt
+  = \int_{t_1}^{t_2} m\frac{d\hvec{v}}{dt}\,dt = m\int_{\hvec{v}(t_1)}^{\hvec{v}(t_2)} d\hvec{v}
+\]
+
+עבור מסה קבועה:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{I} = m\hvec{v}(t_2) - m\hvec{v}(t_1)
+\]
+\end{tcolorbox}
+
+האגף הימני "מתבקש" להגדרה משלו:
+
+\begin{tcolorbox}[defbox, title={תנע (\textenglish{Momentum})}]
+\[
+  \hvec{p} \equiv m\hvec{v}
+\]
+\textbf{כמות התנועה} של גוף --- גודל וקטורי, יחידות \textenglish{kg$\cdot$m/s}.
+\end{tcolorbox}
+
+ובניסוח החדש:
+
+\begin{tcolorbox}[resultbox, title={משפט מתקף-תנע}]
+\[
+  \hvec{I} = \Delta\hvec{p} = \hvec{p}(t_2) - \hvec{p}(t_1)
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox, title={מסקנה רעיונית}]
+\textbf{מתקף הוא בדיוק השינוי בתנע}. הוא לא איזה גודל מומצא --- הוא פשוט "כמה תנע הכוח העביר לגוף".
+\end{tcolorbox}
+
+\subsection*{1.1 ניסוח חלופי של החוק השני}
+
+נחלק את משוואת המתקף-תנע ב-\textenglish{$dt$} (גבול אינפיניטסימלי):
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{F} = \frac{d\hvec{p}}{dt}
+\]
+\end{tcolorbox}
+
+זוהי הצורה \textbf{המקורית} של החוק השני (כפי שניוטון ניסח אותו). היא כללית יותר מ-\textenglish{$\hvec{F} = m\hvec{a}$}, כי היא תקפה גם כאשר המסה משתנה (למשל רקטה הפולטת דלק).
+
+% ============================================================
+\section*{2. שימור התנע במערכת סגורה}
+% ============================================================
+
+נחשב את התנע הכולל של מערכת סגורה של שני גופים \textenglish{$A, B$}:
+\[
+  \hvec{P}_{\text{tot}} = \hvec{p}_A + \hvec{p}_B
+\]
+
+נגזור לפי הזמן ונשתמש בחוק השני:
+\[
+  \frac{d\hvec{P}_{\text{tot}}}{dt} = \hvec{F}_A + \hvec{F}_B
+  = \hvec{F}_{B\to A} + \hvec{F}_{A\to B}
+\]
+
+לפי החוק השלישי, \textenglish{$\hvec{F}_{B\to A} = -\hvec{F}_{A\to B}$}, ולכן הסכום מתאפס:
+
+\begin{tcolorbox}[resultbox, title={חוק שימור התנע}]
+\[
+  \frac{d\hvec{P}_{\text{tot}}}{dt} = 0
+  \qquad\Longrightarrow\qquad
+  \hvec{P}_{\text{tot}} = \text{const}
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox]
+תנע אינו נוצר ואינו נעלם במערכת סגורה --- הוא רק \textbf{עובר} בין גופים דרך כוחות פנימיים. החוק השלישי הוא בעצם החוק הזה במסווה.
+\end{tcolorbox}
+
+% ============================================================
+\section*{3. דוגמה: תפיסת כדור על קרח}
+% ============================================================
+
+ילד במסה \textenglish{$M = 60$ kg} עומד על קרח (חיכוך מתבטל), במנוחה. כדור במסה \textenglish{$m = 0.5$ kg} טס לעברו במהירות \textenglish{$|\hvec{v}_0| = 5$ m/s}. הילד תופס את הכדור.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2, >={Stealth[length=2.5mm]}]
+  % ice surface
+  \draw[thick] (-4, 0) -- (4, 0);
+  \fill[pattern=north east lines, pattern color=blue!30] (-4, 0) rectangle (4, -0.4);
+  \node[blue!60!black] at (3.2, -0.7) {\small קרח};
+  % Child standing (left side)
+  \childStanding{-1.5}{0}{1.0}
+  \node[left] at (-1.85, 0.85) {\textenglish{$M$}};
+  % Ball (right side, incoming)
+  \fill[orange] (2.2, 1.15) circle (0.14);
+  \node[above] at (2.2, 1.35) {\textenglish{$m$}};
+  % Ball velocity arrow (pointing LEFT - toward child)
+  \draw[->, very thick, red] (2, 1.15) -- (0.5, 1.15);
+  \node[red, above] at (1.25, 1.2) {\textenglish{$\hvec{v}_0$}};
+  % After-catch velocity of child (small arrow, same direction as v0)
+  \draw[->, very thick, green!55!black, dashed] (-1.5, 2.4) -- (-2.4, 2.4);
+  \node[green!55!black, above] at (-1.95, 2.45) {\textenglish{$\hvec{u}$ (לאחר התפיסה)}};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{3.1 מהירות הילד+כדור לאחר התפיסה}
+
+המערכת סגורה (אין כוח חיצוני אופקי --- קרח חלק).
+
+\textbf{תנע התחלתי} (לפני התפיסה): רק הכדור נע, הילד במנוחה.
+\[
+  \hvec{p}_{\text{before}} = m\hvec{v}_0
+\]
+
+\textbf{תנע סופי} (אחרי התפיסה): הילד והכדור נעים יחד במהירות \textenglish{$\hvec{u}$}.
+\[
+  \hvec{p}_{\text{after}} = (m + M)\hvec{u}
+\]
+
+מהשימור:
+
+\begin{tcolorbox}[resultbox]
+\[
+  m\hvec{v}_0 = (m + M)\hvec{u}
+  \qquad\Longrightarrow\qquad
+  \hvec{u} = \frac{m}{m + M}\hvec{v}_0
+\]
+\end{tcolorbox}
+
+מספרית:
+\[
+  |\hvec{u}| = \frac{0.5 \cdot 5}{0.5 + 60} \approx 0.041\;\text{m/s}
+\]
+(הילד נע בכיוון הכדור, אבל לאט בהרבה.)
+
+\subsection*{3.2 הכוח שהכדור הפעיל על הילד בזמן התפיסה}
+
+נניח שתהליך התפיסה ארך \textenglish{$\Delta t = 0.2$} שניות. נשתמש במשפט מתקף-תנע על הילד:
+\[
+  \hvec{F} \cdot \Delta t = \Delta\hvec{p}_{\text{child}} = M\hvec{u} - 0
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  |\hvec{F}| = \frac{M\,|\hvec{u}|}{\Delta t}
+  = \frac{60 \cdot 0.041}{0.2}
+  \approx 12.5\;\text{N}
+\]
+\end{tcolorbox}
+
+לפי החוק השלישי, אותו כוח (בכיוון הפוך) פעל מהילד על הכדור, ובלם אותו ממהירות \textenglish{$\hvec{v}_0$} למהירות \textenglish{$\hvec{u}$}.
+
+% ============================================================
+\section*{4. כוחות בטבע --- מבוא}
+% ============================================================
+
+חוקי ניוטון נותנים את \textbf{מסגרת} הדינמיקה. כעת נכיר את הכוחות הספציפיים שמופיעים בבעיות. עיקרי הכוחות:
+\begin{enumerate}
+  \item כוח הכבידה
+  \item מתח בחוט
+  \item כוח הנורמל
+  \item חיכוך (סטטי וקינטי)
+  \item כוחות חשמליים, גרזה, וכו' (יילמדו בנפרד)
+\end{enumerate}
+
+% ============================================================
+\section*{5. כוח הכבידה}
+% ============================================================
+
+\subsection*{5.1 חוק הכבידה האוניברסלי של ניוטון}
+
+\begin{tcolorbox}[defbox]
+בין שני גופים נקודתיים במסות \textenglish{$m_1, m_2$} ובמרחק \textenglish{$r$} פועל כוח משיכה הדדי:
+\[
+  F = G\frac{m_1 m_2}{r^2},
+  \qquad
+  G = 6.674 \times 10^{-11}\;\text{N}\cdot\text{kg}^{-2}\cdot\text{m}^2
+\]
+הכוח לאורך הקו המחבר את שני הגופים, ומקיים את החוק השלישי.
+\end{tcolorbox}
+
+\subsection*{5.2 בקירוב קרוב לפני כדור הארץ}
+
+עבור גוף במסה \textenglish{$m$} קרוב לפני כדור הארץ:
+\[
+  F = G\frac{m M_\oplus}{R_\oplus^2}
+\]
+כאשר \textenglish{$M_\oplus, R_\oplus$} הם מסת ורדיוס כדור הארץ. נסמן את הקבוע:
+\[
+  g \equiv \frac{GM_\oplus}{R_\oplus^2} \approx 9.8\;\text{m/s}^2
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{F}_{\text{grav}} = m\hvec{g}
+  \qquad (|\hvec{g}| \approx 9.8\;\text{m/s}^2,\;\text{כלפי מטה})
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox]
+\textenglish{$g$} מתקבל מקבועים מסוימים של כדור הארץ. על כוכבי לכת אחרים יתקבל ערך שונה. הוא תאוצה (\textenglish{m/s$^2$}), לא כוח.
+\end{tcolorbox}
+
+% ============================================================
+\section*{6. מתח בחוט}
+% ============================================================
+
+חוט יכול להפעיל כוח משיכה על גוף הקשור לקצהו. כוח זה נקרא \textbf{מתח} (\textenglish{tension}) ומסומן ב-\textenglish{$T$}.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2, >={Stealth[length=2.5mm]}]
+  % Ceiling
+  \draw[thick] (-1.5, 2.5) -- (1.5, 2.5);
+  \fill[pattern=north east lines] (-1.5, 2.5) rectangle (1.5, 2.9);
+  % Rope
+  \draw[thick] (0, 2.5) -- (0, 0.8);
+  % Mass
+  \draw[thick, fill=blue!15] (-0.6, 0) rectangle (0.6, 0.8);
+  \node at (0, 0.4) {\textenglish{$m$}};
+  % Tension arrows
+  \draw[->, very thick, blue!70!black] (0, 0.8) -- (0, 1.8);
+  \node[blue!70!black, right] at (0.05, 1.3) {\textenglish{$\hvec{T}$}};
+  % Gravity
+  \draw[->, very thick, red] (0, 0.4) -- (0, -0.8);
+  \node[red, right] at (0.05, -0.2) {\textenglish{$m\hvec{g}$}};
+\end{tikzpicture}
+\end{center}
+
+\begin{tcolorbox}[defbox, title={חוט אידיאלי}]
+חוט \textbf{חסר מסה} ובלתי-מתיח. במצב זה, המתח \textbf{אחיד לכל אורך החוט}.
+\end{tcolorbox}
+
+\textbf{נימוק:} בחוט חסר מסה, חוק שני מספר על כל קטע אינפיניטסימלי: \textenglish{$T_1 - T_2 = 0$}, ולכן \textenglish{$T_1 = T_2$} בכל נקודה.
+
+\textbf{תוצאה מעשית:} בגלגלת חסרת חיכוך, המתח משני צדי החוט שווה.
+
+% ============================================================
+\section*{7. כוח הנורמל}
+% ============================================================
+
+\begin{tcolorbox}[defbox, title={כוח הנורמל}]
+כוח שמשטח מפעיל על גוף הנוגע בו, \textbf{תמיד ניצב למשטח המגע}.
+\end{tcolorbox}
+
+\textbf{מאפיין מרכזי:} הנורמל אינו ערך קבוע מראש --- הוא \textbf{משתנה לפי הצורך} כדי למנוע חדירה לתוך המשטח. זהו \textbf{כוח אילוץ} (\textenglish{constraint force}).
+
+\textbf{דוגמה:} קופסה על שולחן אופקי --- הנורמל יתאזן בדיוק עם מרכיב הכבידה הניצב למשטח. על שולחן בשיפוע --- הנורמל יקטן בהתאם.
+
+% ============================================================
+\section*{8. כוח החיכוך}
+% ============================================================
+
+חיכוך הוא כוח הנוצר בין שני משטחים במגע. \textbf{כיוונו תמיד מנוגד לתנועה היחסית} (או למגמת התנועה היחסית) של גוף אחד ביחס לשני.
+
+\subsection*{8.1 חיכוך סטטי}
+
+כאשר הגופים \textbf{אינם נעים} זה ביחס לזה, החיכוך הוא סטטי. הוא \textbf{מתאזן} עם הכוח החיצוני בדיוק כדי למנוע תנועה --- עד לגבול עליון:
+
+\begin{tcolorbox}[resultbox]
+\[
+  f_s \le \mu_s N
+\]
+\end{tcolorbox}
+
+\textenglish{$\mu_s$} = \textbf{מקדם החיכוך הסטטי}, תלוי בשני המשטחים. \textenglish{$N$} = כוח הנורמל ביניהם.
+
+\subsection*{8.2 חיכוך קינטי}
+
+כאשר החיכוך הסטטי המקסימלי מופר, הגוף מתחיל לנוע, ואז פועל \textbf{חיכוך קינטי}:
+
+\begin{tcolorbox}[resultbox]
+\[
+  f_k = \mu_k N
+\]
+\end{tcolorbox}
+
+\textbf{קבוע} (לא תלוי במהירות), בכיוון מנוגד למהירות היחסית.
+
+\subsection*{8.3 גרף החיכוך כפונקציה של הכוח המופעל}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.1, >={Stealth[length=2.5mm]}]
+  % Axes
+  \draw[->, thick] (0, 0) -- (7, 0) node[right] {\textenglish{$F_{\text{applied}}$}};
+  \draw[->, thick] (0, 0) -- (0, 4.2) node[above] {\textenglish{$f$ (חיכוך)}};
+  % Static (diagonal up to peak)
+  \draw[very thick, blue!70!black] (0, 0) -- (3.5, 3.5);
+  % Drop at threshold
+  \draw[very thick, blue!70!black, dashed] (3.5, 3.5) -- (3.5, 2.5);
+  % Kinetic (constant)
+  \draw[very thick, blue!70!black] (3.5, 2.5) -- (6.5, 2.5);
+  % Labels
+  \draw[dashed, gray] (3.5, 0) -- (3.5, 3.5);
+  \draw[dashed, gray] (0, 3.5) -- (3.5, 3.5);
+  \draw[dashed, gray] (0, 2.5) -- (3.5, 2.5);
+  \node[left] at (0, 3.5) {\textenglish{$\mu_s N$}};
+  \node[left] at (0, 2.5) {\textenglish{$\mu_k N$}};
+  \node[below] at (3.5, -0.05) {\small סף תזוזה};
+  % Region labels
+  \node[blue!70!black] at (1.5, 1.0) {\small\textit{סטטי}};
+  \node[blue!70!black] at (5.0, 2.8) {\small\textit{קינטי}};
+\end{tikzpicture}
+\end{center}
+
+\begin{tcolorbox}[notebox, title={פירוש הגרף}]
+\begin{itemize}
+  \item כל עוד \textenglish{$F_{\text{applied}} < \mu_s N$}: החיכוך הסטטי מתאים את עצמו לכוח החיצוני, הגוף נשאר במנוחה.
+  \item ברגע ש-\textenglish{$F_{\text{applied}}$} עובר את \textenglish{$\mu_s N$}: הגוף מתחיל לנוע, החיכוך "קופץ למטה" לערך \textenglish{$\mu_k N$} (בדרך כלל \textenglish{$\mu_k < \mu_s$}).
+  \item מכאן והלאה: החיכוך הקינטי קבוע, ללא תלות בכוח המופעל או במהירות.
+\end{itemize}
+\end{tcolorbox}
+
+% ============================================================
+\section*{סיכום: מבט-על}
+% ============================================================
+
+\begin{tcolorbox}[warnbox, title={נקודות מפתח לזכור}]
+\begin{enumerate}
+  \item \textbf{תנע} \textenglish{$\hvec{p} = m\hvec{v}$} --- הגודל ש"נשמר" במערכת סגורה.
+  \item \textbf{מתקף = שינוי בתנע:} \textenglish{$\hvec{I} = \Delta\hvec{p}$}.
+  \item \textbf{ניסוח כללי של חוק שני:} \textenglish{$\hvec{F} = d\hvec{p}/dt$}.
+  \item \textbf{כבידה אוניברסלית:} \textenglish{$F = Gm_1 m_2/r^2$}; קרוב לפני כדה"א: \textenglish{$F = mg$}.
+  \item \textbf{מתח בחוט אידיאלי} אחיד לכל אורכו.
+  \item \textbf{נורמל} ניצב למשטח, מתאים את עצמו (כוח אילוץ).
+  \item \textbf{חיכוך סטטי} \textenglish{$f_s \le \mu_s N$} (מתאים את עצמו עד לסף); \textbf{חיכוך קינטי} \textenglish{$f_k = \mu_k N$} (קבוע).
+\end{enumerate}
+\end{tcolorbox}
+
+\end{document}
