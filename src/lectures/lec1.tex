@@ -1,0 +1,560 @@
+%!TEX program = xelatex
+% ============================================================
+%  הרצאה 1 — קינמטיקה: תיאור תנועה
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\tcbset{
+  resultbox/.style={
+    enhanced, colback=white, colframe=black,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+  },
+  notebox/.style={
+    enhanced, breakable,
+    colback=gray!8, colframe=gray!50,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+    fonttitle=\bfseries,
+  },
+  warnbox/.style={
+    enhanced, breakable,
+    colback=red!5, colframe=red!60,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+  defbox/.style={
+    enhanced, breakable,
+    colback=blue!5, colframe=blue!50,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing}
+\usepackage[a4paper, top=2cm, bottom=2cm,
+            left=2cm, right=2cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.3}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}[\titlerule]
+\titleformat{\subsection}{\bfseries}{\thesubsection}{0.5em}{}
+
+\setlength{\headheight}{15pt}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textenglish{\textbf{Lecture 1 --- Kinematics}}}
+\lhead{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{hebrew}
+\setotherlanguage{english}
+\setmainfont{Times New Roman}
+\newfontfamily\hebrewfont{Times New Roman}
+\newfontfamily\englishfont{Times New Roman}
+\newfontfamily\hebrewfonttt{Courier New}
+
+\newcommand{\hvec}[1]{\overrightarrow{#1}}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ── Title ────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries הרצאה 1 --- קינמטיקה: תיאור תנועה}\\[6pt]
+  \rule{\linewidth}{0.8pt}
+\end{center}
+\vspace{0.5cm}
+
+% ============================================================
+\section*{1. מבוא: מערכת ייחוס ותיאור תנועה}
+% ============================================================
+
+כדי לתאר תנועה של חלקיק במרחב נדרשים שני אלמנטים בסיסיים:
+
+\begin{tcolorbox}[defbox, title={מערכת ייחוס}]
+\begin{enumerate}
+  \item \textbf{ראשית צירים} \textenglish{$O$} --- נקודה ממנה מודדים את המיקום.
+  \item \textbf{מערכת צירים} \textenglish{$\hat{x}, \hat{y}, \hat{z}$} --- שלושה כיווני יחידה אורתוגונליים.
+\end{enumerate}
+\end{tcolorbox}
+
+\medskip
+
+תנועה תמיד מתוארת \textbf{ביחס למערכת ייחוס}. אותה תנועה תיראה שונה במערכות שונות --- לדוגמה, כדור הנופל ברכבת ייראה נע אנכית מנקודת מבטו של נוסע, אך בפרבולה מנקודת מבטו של צופה על הקרקע.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.3, >={Stealth[length=3mm]}]
+  % axes
+  \draw[->, thick] (0,0) -- (3.2,0) node[right] {\textenglish{$x$}};
+  \draw[->, thick] (0,0) -- (0,2.8) node[above] {\textenglish{$y$}};
+  \draw[->, thick] (0,0) -- (-1.4,-1.0) node[below left] {\textenglish{$z$}};
+  \node[above left] at (0,0) {\textenglish{$O$}};
+  % trajectory
+  \draw[blue, thick, smooth] plot coordinates
+    {(0.3,2.3) (0.9,1.9) (1.3,1.5) (1.8,1.0) (2.3,0.4) (2.7,-0.3)};
+  % particle
+  \fill[black] (1.5,1.25) circle (2.2pt);
+  \node[right] at (1.6,1.4) {חלקיק};
+  % r(t) vector
+  \draw[->, very thick, red] (0,0) -- (1.5,1.25);
+  \node[red, above left] at (0.8,0.65) {\textenglish{$\hvec{r}(t)$}};
+  % label trajectory
+  \node[blue] at (3.2,-0.7) {מסלול};
+\end{tikzpicture}
+\end{center}
+
+% ============================================================
+\section*{2. וקטור המיקום \textenglish{$\hvec{r}(t)$}}
+% ============================================================
+
+\textbf{וקטור המיקום} הוא וקטור מראשית הצירים אל החלקיק. הוא מתאר את \textbf{מקומו} של החלקיק בכל רגע \textenglish{$t$}, ולכן הוא פונקציה של הזמן.
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{r}(t) = x(t)\,\hat{x} + y(t)\,\hat{y} + z(t)\,\hat{z}
+\]
+\end{tcolorbox}
+
+ככל ש-\textenglish{$t$} משתנה, קצה הוקטור מתאר במרחב עקומה הנקראת \textbf{מסלול התנועה} (\textit{trajectory}).
+
+% ============================================================
+\section*{3. רכיבי וקטור במערכת קרטזית}
+% ============================================================
+
+כל וקטור \textenglish{$\hvec{A}$} ניתן לפרק לסכום של שלושה רכיבים בכיווני הצירים:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{A} = A_x\,\hat{x} + A_y\,\hat{y} + A_z\,\hat{z}
+\]
+\end{tcolorbox}
+
+\textenglish{$A_x, A_y, A_z$} הם \textbf{סקלרים} המבטאים את ההיטלים של הוקטור על כל ציר.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.4, >={Stealth[length=2.5mm]}]
+  % axes
+  \draw[->, thick] (0,0) -- (3.2,0) node[right] {\textenglish{$x$}};
+  \draw[->, thick] (0,0) -- (0,2.5) node[above] {\textenglish{$y$}};
+  \draw[->, thick] (0,0) -- (-1.4,-1.0) node[below left] {\textenglish{$z$}};
+  % A vector
+  \draw[->, very thick, black] (0,0) -- (2.3, 1.6);
+  \node[above right] at (2.3,1.6) {\textenglish{$\hvec{A}$}};
+  % components projections
+  \draw[->, red, thick] (0,0) -- (2.3,0);
+  \node[red, below] at (1.15,-0.05) {\textenglish{$A_x\hat{x}$}};
+  \draw[->, red, thick] (2.3,0) -- (2.3,1.6);
+  \node[red, right] at (2.3,0.8) {\textenglish{$A_y\hat{y}$}};
+  % dashed guide
+  \draw[red, dashed, thin] (0,1.6) -- (2.3,1.6);
+\end{tikzpicture}
+\end{center}
+
+\textbf{מקרה פרטי --- וקטור המיקום:}
+\[
+  \hvec{r} = x\,\hat{x} + y\,\hat{y} + z\,\hat{z}
+\]
+
+% ============================================================
+\section*{4. וקטור המהירות \textenglish{$\hvec{v}(t)$}}
+% ============================================================
+
+\textbf{וקטור ההעתק} הוא ההפרש בין שני וקטורי מיקום בזמנים סמוכים:
+\[
+  \Delta\hvec{r} = \hvec{r}(t+\Delta t) - \hvec{r}(t)
+\]
+
+\begin{center}
+\begin{tikzpicture}[scale=1.3, >={Stealth[length=2.5mm]}]
+  \draw[->, thick] (0,0) -- (4,0) node[right] {\textenglish{$x$}};
+  \draw[->, thick] (0,0) -- (0,3) node[above] {\textenglish{$y$}};
+  \node[below left] at (0,0) {\textenglish{$O$}};
+  % trajectory
+  \draw[blue, thick, smooth] plot coordinates
+    {(0.3,2.7) (0.7,2.3) (1.0,2.0) (1.4,1.7) (1.8,1.3) (2.3,0.9) (2.9,0.4)};
+  % r(t)
+  \draw[->, thick, red] (0,0) -- (1.0,2.0);
+  \node[red, left] at (0.5,1.05) {\textenglish{$\hvec{r}(t)$}};
+  \fill (1.0,2.0) circle (1.8pt);
+  % r(t+dt)
+  \draw[->, thick, red!60!black] (0,0) -- (1.8,1.3);
+  \node[red!60!black, below] at (1.4,0.55) {\textenglish{$\hvec{r}(t+\Delta t)$}};
+  \fill (1.8,1.3) circle (1.8pt);
+  % Delta r
+  \draw[->, very thick, green!50!black] (1.0,2.0) -- (1.8,1.3);
+  \node[green!50!black, above right] at (1.4,1.7) {\textenglish{$\Delta\hvec{r}$}};
+\end{tikzpicture}
+\end{center}
+
+\textbf{וקטור המהירות הממוצעת} בקטע זמן \textenglish{$\Delta t$}:
+\[
+  \hvec{v}_{\text{avg}} = \frac{\Delta\hvec{r}}{\Delta t}
+\]
+
+\textbf{וקטור המהירות הרגעית} --- גבול כאשר \textenglish{$\Delta t \to 0$}:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{v}(t) = \lim_{\Delta t \to 0} \frac{\hvec{r}(t+\Delta t) - \hvec{r}(t)}{\Delta t}
+              = \frac{d\hvec{r}}{dt} = \dot{\hvec{r}}
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox, title={תכונה גיאומטרית חשובה}]
+וקטור המהירות \textenglish{$\hvec{v}(t)$} תמיד \textbf{משיק למסלול} בנקודה בה נמצא החלקיק. ככל ש-\textenglish{$\Delta t \to 0$}, וקטור ההעתק \textenglish{$\Delta\hvec{r}$} שואף לכיוון המשיק.
+\end{tcolorbox}
+
+\textbf{גזירת וקטור} נעשית רכיב-רכיב (\textenglish{$\hat{x}, \hat{y}, \hat{z}$} קבועים):
+\[
+  \hvec{v} = \dot{x}\,\hat{x} + \dot{y}\,\hat{y} + \dot{z}\,\hat{z}
+\]
+
+% ============================================================
+\section*{5. סקלר מול וקטור}
+% ============================================================
+
+\begin{tcolorbox}[notebox, title={סקלר}]
+גודל המתואר ב\textbf{מספר אחד בלבד}. דוגמאות: זמן, מסה, טמפרטורה, אנרגיה, מטען חשמלי.
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox, title={וקטור}]
+גודל הדורש \textbf{גודל וכיוון}. דוגמאות: מיקום, מהירות, תאוצה, כוח, תנע.
+\end{tcolorbox}
+
+\begin{tcolorbox}[warnbox, title={שים לב --- בלבול נפוץ}]
+\textbf{מהירות סקלרית (\textenglish{speed})} אינה אותו דבר כמו \textbf{וקטור המהירות (\textenglish{velocity})}.\\[3pt]
+מכונית הנוסעת במהירות סקלרית קבועה של 60 קמ"ש סביב מסלול מעגלי --- וקטור המהירות שלה \textbf{משתנה} כל הזמן (הכיוון מתחלף), ולכן יש תאוצה.
+\end{tcolorbox}
+
+% ============================================================
+\section*{6. וקטור התאוצה \textenglish{$\hvec{a}(t)$}}
+% ============================================================
+
+באופן מקביל למהירות, נגדיר את התאוצה כקצב שינוי וקטור המהירות:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{a}(t) = \frac{d\hvec{v}}{dt} = \dot{\hvec{v}} = \ddot{\hvec{r}}
+\]
+\end{tcolorbox}
+
+ברכיבים:
+\[
+  \hvec{a} = \ddot{x}\,\hat{x} + \ddot{y}\,\hat{y} + \ddot{z}\,\hat{z}
+\]
+
+\begin{tcolorbox}[warnbox, title={מתי יש תאוצה?}]
+תאוצה קיימת \textbf{בכל פעם שוקטור המהירות משתנה} --- בגודל, בכיוון, או בשניהם.\\
+זו הסיבה שתנועה מעגלית במהירות סקלרית קבועה היא תנועה \textbf{מואצת}.
+\end{tcolorbox}
+
+% ============================================================
+\section*{7. אינטגרציה: שחזור מהירות ומיקום}
+% ============================================================
+
+על-פי המשפט היסודי של החדו"א, אם \textenglish{$F' = f$} אזי:
+\[
+  F(b) - F(a) = \int_a^b f(x)\,dx
+\]
+
+מכאן, אם נדע את \textbf{וקטור המהירות} כפונקציה של זמן, נוכל לחשב את שינוי המיקום:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{r}(t_2) - \hvec{r}(t_1) = \int_{t_1}^{t_2} \hvec{v}(t)\,dt
+\]
+\end{tcolorbox}
+
+ובאופן דומה, מתאוצה למהירות:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{v}(t_2) - \hvec{v}(t_1) = \int_{t_1}^{t_2} \hvec{a}(t)\,dt
+\]
+\end{tcolorbox}
+
+\medskip
+
+לפעמים נוח לרשום זאת ביחס לרגע \textenglish{$t=0$}:
+\[
+  \hvec{r}(t) = \hvec{r}(0) + \int_0^t \hvec{v}(\tau)\,d\tau,
+  \qquad
+  \hvec{v}(t) = \hvec{v}(0) + \int_0^t \hvec{a}(\tau)\,d\tau
+\]
+
+% ============================================================
+\section*{8. משוואת התנועה}
+% ============================================================
+
+\begin{tcolorbox}[defbox, title={משוואת התנועה}]
+משוואה (בדרך כלל דיפרנציאלית) שמקשרת בין התאוצה לבין הכוחות הפועלים על החלקיק --- חוק שני של ניוטון:
+\[
+  \hvec{F} = m\hvec{a} = m\ddot{\hvec{r}}
+\]
+פתרון המשוואה בהינתן \textbf{תנאי התחלה} (\textenglish{$\hvec{r}(0)$} ו-\textenglish{$\hvec{v}(0)$}) נותן את \textenglish{$\hvec{r}(t)$} --- כלומר את \textbf{המסלול המלא}.
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox, title={מבנה כללי של בעיה בקינמטיקה}]
+\begin{enumerate}
+  \item מציאת התאוצה (מכוחות, או נתונה).
+  \item אינטגרציה של \textenglish{$\hvec{a}$} כדי לקבל \textenglish{$\hvec{v}(t)$}.
+  \item אינטגרציה של \textenglish{$\hvec{v}$} כדי לקבל \textenglish{$\hvec{r}(t)$}.
+  \item שימוש בתנאי התחלה לקביעת קבועי האינטגרציה.
+\end{enumerate}
+\end{tcolorbox}
+
+% ============================================================
+\section*{9. דוגמה: תנועה מעגלית}
+% ============================================================
+
+חלקיק נע על מעגל ברדיוס \textenglish{$R$} במישור \textenglish{$xy$}, כאשר מרכז המעגל בראשית הצירים. נסמן את הזווית בין וקטור המיקום לציר \textenglish{$x$} ב-\textenglish{$\theta = \theta(t)$}.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.5, >={Stealth[length=2.5mm]}]
+  % axes
+  \draw[->, thick] (-2.3,0) -- (2.5,0) node[right] {\textenglish{$x$}};
+  \draw[->, thick] (0,-2.3) -- (0,2.5) node[above] {\textenglish{$y$}};
+  % circle
+  \draw[blue, thick] (0,0) circle (2);
+  % position vector
+  \draw[->, very thick, red] (0,0) -- ({2*cos(50)}, {2*sin(50)});
+  \node[red, above right] at ({cos(50)+0.05}, {sin(50)-0.05}) {\textenglish{$\hvec{r}$}};
+  % angle arc
+  \draw[thick] (0.55,0) arc (0:50:0.55);
+  \node at (0.85, 0.3) {\textenglish{$\theta$}};
+  % point
+  \fill ({2*cos(50)}, {2*sin(50)}) circle (1.8pt);
+  % R label is the radius - position on the way already (r vector is the radius)
+\end{tikzpicture}
+\end{center}
+
+\textbf{וקטור המיקום:}
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{r}(t) = R\cos\theta\,\hat{x} + R\sin\theta\,\hat{y},
+  \qquad \theta = \theta(t)
+\]
+\end{tcolorbox}
+
+\subsection*{9.1 וקטור המהירות בתנועה מעגלית}
+
+נגזור את \textenglish{$\hvec{r}$} לפי \textenglish{$t$} (כלל השרשרת על \textenglish{$\cos\theta(t)$}):
+\[
+  \hvec{v} = \dot{\hvec{r}} = -R\dot{\theta}\sin\theta\,\hat{x} + R\dot{\theta}\cos\theta\,\hat{y}
+\]
+
+נגדיר את \textbf{המהירות הזוויתית}:
+
+\begin{tcolorbox}[defbox]
+\[
+  \omega \equiv \dot{\theta} = \frac{d\theta}{dt}
+  \qquad \text{[יחידות: \textenglish{rad/s}]}
+\]
+\end{tcolorbox}
+
+ולכן:
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{v}(t) = -R\omega\sin\theta\,\hat{x} + R\omega\cos\theta\,\hat{y}
+\]
+\end{tcolorbox}
+
+\textbf{גודל המהירות:}
+\[
+  |\hvec{v}|^2 = R^2\omega^2\sin^2\theta + R^2\omega^2\cos^2\theta = R^2\omega^2
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  |\hvec{v}| = R\omega
+\]
+\end{tcolorbox}
+
+\subsection*{9.2 וקטור התאוצה בתנועה מעגלית קצובה}
+
+עבור תנועה מעגלית \textbf{קצובה} --- \textenglish{$\omega = $} קבועה (\textenglish{$\dot{\omega} = 0$}) --- נגזור את \textenglish{$\hvec{v}$} שוב:
+\[
+  \hvec{a} = \dot{\hvec{v}} = -R\omega^2\cos\theta\,\hat{x} - R\omega^2\sin\theta\,\hat{y}
+\]
+
+\textbf{תצפית מרכזית:} זה בדיוק \textenglish{$-\omega^2$} כפול \textenglish{$\hvec{r}$}:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{a} = -\omega^2\,\hvec{r},
+  \qquad
+  |\hvec{a}| = R\omega^2 = \frac{v^2}{R}
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[warnbox, title={מסקנה גיאומטרית}]
+התאוצה מצביעה \textbf{מהחלקיק אל מרכז המעגל} (בגלל סימן המינוס לעומת \textenglish{$\hvec{r}$}). זו ה\textbf{תאוצה הצנטריפטלית}.\\[3pt]
+למרות שגודל המהירות \textbf{קבוע}, יש תאוצה משום ש\textbf{כיוון המהירות משתנה ברציפות}.
+\end{tcolorbox}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.6, >={Stealth[length=2.5mm]}]
+  \draw[->, thick] (-2.3,0) -- (2.5,0) node[right] {\textenglish{$x$}};
+  \draw[->, thick] (0,-2.3) -- (0,2.5) node[above] {\textenglish{$y$}};
+  \draw[blue, thick] (0,0) circle (2);
+  % position
+  \draw[->, very thick, red] (0,0) -- ({2*cos(55)}, {2*sin(55)});
+  \fill ({2*cos(55)}, {2*sin(55)}) circle (1.8pt);
+  % velocity (tangent: perpendicular to r, in direction of motion)
+  \draw[->, very thick, green!55!black]
+    ({2*cos(55)}, {2*sin(55)})
+    -- ({2*cos(55) + 1.1*cos(145)}, {2*sin(55) + 1.1*sin(145)});
+  \node[green!55!black, above]
+    at ({2*cos(55) + 0.7*cos(145)}, {2*sin(55) + 0.7*sin(145) + 0.05})
+    {\textenglish{$\hvec{v}$}};
+  % acceleration (toward center)
+  \draw[->, very thick, purple]
+    ({2*cos(55)}, {2*sin(55)})
+    -- ({1.05*cos(55)}, {1.05*sin(55)});
+  \node[purple, right]
+    at ({1.5*cos(55)+0.05}, {1.5*sin(55)})
+    {\textenglish{$\hvec{a}$}};
+  \node[red, above right] at ({cos(55)}, {sin(55)-0.05}) {\textenglish{$\hvec{r}$}};
+\end{tikzpicture}
+\end{center}
+
+% ============================================================
+\section*{10. תנועה מעגלית קצובה: מחזור ותדירות}
+% ============================================================
+
+כאשר \textenglish{$\omega$} קבועה, החלקיק מבצע תנועה \textbf{מחזורית}. מציאת \textenglish{$\theta(t)$} באינטגרציה:
+\[
+  \theta(t) = \theta(0) + \int_0^t \omega\,d\tau = \theta_0 + \omega t
+\]
+
+\begin{tcolorbox}[defbox, title={מחזור (\textenglish{Period})}]
+\textenglish{$T$} = הזמן הדרוש להשלמת סיבוב מלא (\textenglish{$2\pi$} רדיאן):
+\[
+  \omega T = 2\pi
+  \quad\Longrightarrow\quad
+  T = \frac{2\pi}{\omega}
+\]
+\end{tcolorbox}
+
+\subsection*{דוגמה: מחוג השניות בשעון}
+
+מחוג השניות משלים סיבוב מלא ב-60 שניות. נחשב את המהירות הזוויתית:
+\[
+  T = 60\text{ s}
+  \quad\Longrightarrow\quad
+  \omega = \frac{2\pi}{T} = \frac{2\pi}{60\text{ s}} = \frac{\pi}{30}\text{ rad/s}
+\]
+
+% ============================================================
+\section*{11. תנועה יחסית --- מערכות ייחוס נעות}
+% ============================================================
+
+עד עכשיו תיארנו תנועה ביחס למערכת ייחוס יחידה. מה קורה כאשר יש \textbf{שתי} מערכות ייחוס?
+
+\begin{itemize}
+  \item \textenglish{$O$} --- מערכת "במנוחה" (לדוגמה, הקרקע).
+  \item \textenglish{$O'$} --- מערכת נוספת הזזה ביחס ל-\textenglish{$O$} (לדוגמה, רכב).
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.5, >={Stealth[length=2.5mm]}]
+  \fill (0,0) circle (1.8pt);
+  \node[above left] at (0,0) {\textenglish{$O$}};
+  \fill (2,-0.6) circle (1.8pt);
+  \node[below left] at (2,-0.6) {\textenglish{$O'$}};
+  \fill (3.5,1) circle (2pt);
+  \node[right] at (3.5,1) {\textenglish{$P$}};
+  % R (between origins)
+  \draw[->, very thick, blue] (0,0) -- (2,-0.6);
+  \node[blue, below] at (1,-0.4) {\textenglish{$\hvec{R}$}};
+  % r (from O to P)
+  \draw[->, very thick, red] (0,0) -- (3.5,1);
+  \node[red, above left] at (1.7,0.6) {\textenglish{$\hvec{r}$}};
+  % r' (from O' to P)
+  \draw[->, very thick, green!55!black] (2,-0.6) -- (3.5,1);
+  \node[green!55!black, right] at (2.65, 0.2) {\textenglish{$\hvec{r}\,'$}};
+\end{tikzpicture}
+\end{center}
+
+מהגיאומטריה של חיבור וקטורים:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{r} = \hvec{R} + \hvec{r}\,'
+\]
+\end{tcolorbox}
+
+\subsection*{11.1 טרנספורמציית גלילי --- מהירויות יחסיות}
+
+נגזור את שני האגפים לפי הזמן:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{v} = \hvec{V} + \hvec{v}\,'
+\]
+\end{tcolorbox}
+
+\noindent
+כאשר \textenglish{$\hvec{V} = \dot{\hvec{R}}$} היא המהירות של מערכת \textenglish{$O'$} ביחס ל-\textenglish{$O$},\\
+\textenglish{$\hvec{v}\,'$} היא מהירות החלקיק ביחס למערכת \textenglish{$O'$},\\
+ו-\textenglish{$\hvec{v}$} היא מהירות החלקיק ביחס למערכת \textenglish{$O$}.
+
+\begin{tcolorbox}[notebox, title={דוגמה אינטואיטיבית --- מטוס ורוח}]
+מטוס נע במהירות 600 קמ"ש ביחס לאוויר. הרוח נעה במהירות 30 קמ"ש ביחס לקרקע. מהי מהירות המטוס ביחס לקרקע?\\[5pt]
+\textbf{תשובה (חיבור וקטורי):}
+\begin{itemize}
+  \item רוח בכיוון התנועה: \textenglish{$600 + 30 = 630$} קמ"ש.
+  \item רוח בכיוון מנוגד: \textenglish{$600 - 30 = 570$} קמ"ש.
+  \item רוח בניצב: \textenglish{$\sqrt{600^2 + 30^2} \approx 600.7$} קמ"ש.
+\end{itemize}
+\end{tcolorbox}
+
+% ============================================================
+\section*{סיכום: מבט-על על הקינמטיקה}
+% ============================================================
+
+\begin{tcolorbox}[notebox, title={מושגי יסוד}]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{גודל} & \textbf{הגדרה} & \textbf{תכונה גיאומטרית} \\
+\hline
+מיקום \textenglish{$\hvec{r}(t)$} & וקטור מ-\textenglish{$O$} לחלקיק & מצביע על המסלול \\
+\hline
+מהירות \textenglish{$\hvec{v}(t)$} & \textenglish{$d\hvec{r}/dt$} & משיק למסלול \\
+\hline
+תאוצה \textenglish{$\hvec{a}(t)$} & \textenglish{$d\hvec{v}/dt$} & במעגל קצוב: למרכז \\
+\hline
+\end{tabular}
+\end{center}
+\end{tcolorbox}
+
+\begin{tcolorbox}[warnbox, title={נקודות מפתח לזכור}]
+\begin{enumerate}
+  \item תנועה מוגדרת אך ורק \textbf{ביחס למערכת ייחוס}.
+  \item וקטור המהירות \textbf{תמיד משיק למסלול}.
+  \item תאוצה קיימת בכל פעם שוקטור המהירות משתנה --- בגודל \textbf{או} בכיוון.
+  \item בתנועה מעגלית קצובה:
+        \textenglish{$|\hvec{v}| = R\omega$},\;
+        \textenglish{$|\hvec{a}| = R\omega^2 = v^2/R$},\;
+        ה-\textenglish{$\hvec{a}$} מצביע למרכז המעגל.
+  \item טרנספורמציית גלילי לחיבור מהירויות:
+        \textenglish{$\hvec{v} = \hvec{V} + \hvec{v}\,'$}.
+\end{enumerate}
+\end{tcolorbox}
+
+\end{document}
