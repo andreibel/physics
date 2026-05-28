@@ -1,0 +1,561 @@
+%!TEX program = xelatex
+% ============================================================
+%  הרצאה 4 — כוח גרר (Force III)
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\tcbset{
+  resultbox/.style={
+    enhanced, colback=white, colframe=black,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+  },
+  notebox/.style={
+    enhanced, breakable,
+    colback=gray!8, colframe=gray!50,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+    fonttitle=\bfseries,
+  },
+  warnbox/.style={
+    enhanced, breakable,
+    colback=red!5, colframe=red!60,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+  defbox/.style={
+    enhanced, breakable,
+    colback=blue!5, colframe=blue!50,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing, patterns}
+\usepackage{pgfplots}          % added: velocity-vs-time graphs (standard in TeXLive)
+\pgfplotsset{compat=1.18}
+\usepackage[a4paper, top=2cm, bottom=2cm,
+            left=2cm, right=2cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.3}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}[\titlerule]
+\titleformat{\subsection}{\bfseries}{\thesubsection}{0.5em}{}
+
+\setlength{\headheight}{15pt}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textenglish{\textbf{Force III --- Drag Force}}}
+\lhead{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{hebrew}
+\setotherlanguage{english}
+\setmainfont{Times New Roman}
+\newfontfamily\hebrewfont{Times New Roman}
+\newfontfamily\englishfont{Times New Roman}
+\newfontfamily\hebrewfonttt{Courier New}
+\setmonofont{Courier New}      % added: monospace for Python listings
+
+% ── Mandatory bidi + TikZ fix (after polyglossia) ───────────
+% Forces every tikzpicture into LTR so Hebrew labels do not throw
+% pgfkeys '/tikz/{right}' errors or render mirrored.
+\usepackage{etoolbox}
+\BeforeBeginEnvironment{tikzpicture}{\begin{LTR}}
+\AfterEndEnvironment{tikzpicture}{\end{LTR}}
+
+% ── Python code listings (added; both lectures contain code) ─
+\usepackage{listings}
+\definecolor{codekw}{RGB}{0,0,180}
+\definecolor{codecmt}{RGB}{34,120,34}
+\definecolor{codestr}{RGB}{170,80,0}
+\lstdefinestyle{pycode}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{codekw}\bfseries,
+  commentstyle=\color{codecmt}\itshape,
+  stringstyle=\color{codestr},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!50},
+  framerule=0.6pt,
+  framesep=5pt,
+  columns=fullflexible,
+  keepspaces=true,
+  aboveskip=6pt, belowskip=4pt,
+}
+
+\newcommand{\hvec}[1]{\overrightarrow{#1}}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ── Title ────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries כוח גרר \textenglish{(Drag Force)}}\\[6pt]
+  \rule{\linewidth}{0.8pt}
+\end{center}
+\vspace{0.5cm}
+
+עד כה עסקנו בכוחות שאינם תלויים במהירות (כבידה, נורמל, מתח). כעת נכיר כוח שכן תלוי במהירות --- \textbf{כוח הגרר} --- ונפתור באמצעותו שתי בעיות תנועה, אנליטית ונומרית.
+
+% ============================================================
+\section*{1. כוח גרר --- הגדרה וקירובים}
+% ============================================================
+
+\subsection*{1.1 הגדרה}
+
+\begin{tcolorbox}[defbox, title={כוח גרר (\textenglish{Drag Force})}]
+\textbf{כוח התנגדות התווך} --- הכוח הנגדי לכיוון התנועה, הנובע מהמדיום שבו הגוף נע.
+\begin{itemize}
+  \item \textbf{תווך} --- החומר שממלא את הסביבה שבה הגוף נע (אוויר, מים וכו').
+  \item הכוח \textbf{מנוגד} לכיוון המהירות.
+  \item כאשר המהירות ביחס לתווך היא \textenglish{$0$} --- הכוח הוא \textenglish{$0$}.
+  \item ככל שהמהירות גדלה, הכוח גדל.
+\end{itemize}
+\end{tcolorbox}
+
+פונקציית כוח הגרר מורכבת; לכן בתחום מהירויות נמוכות נעשה בה \textbf{קירוב ליניארי}:
+
+\begin{tcolorbox}[resultbox, title={קירוב ליניארי}]
+\[
+  \hvec{f} = -b\,v\,\hat{v} = -b\hvec{v}
+\]
+\end{tcolorbox}
+
+כאשר \textenglish{$b$} הוא קבוע התלוי ב:
+\begin{itemize}
+  \item \textbf{הגוף} --- שטח החתך הניצב למהירות, וצורת הגוף.
+  \item \textbf{התווך} --- צפיפות וצמיגות.
+\end{itemize}
+
+\subsection*{1.2 יחידות המידה של \textenglish{$b$}}
+
+מאחר ש-\textenglish{$[\,b\,]\cdot\frac{\text{m}}{\text{s}} = \text{N}$}:
+
+\begin{tcolorbox}[resultbox]
+\[
+  [\,b\,] = \frac{\text{N}\cdot\text{s}}{\text{m}} = \frac{\text{kg}}{\text{s}}
+\]
+\end{tcolorbox}
+
+\subsection*{1.3 קירוב ריבועי (קירוב עדין יותר)}
+
+במהירויות גבוהות יותר נוסיף איבר ריבועי:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{f} = -\bigl(b\,v + c\,v^2\bigr)\hat{v}
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox, title={אזורי תקפות}]
+\begin{itemize}
+  \item אם \textenglish{$c v^2 \ll b v$}, כלומר \textenglish{$v \ll \tfrac{b}{c}$} --- שולט האיבר הליניארי:
+        \textenglish{$\hvec{f} \approx -b\hvec{v}$} (קירוב ליניארי).
+  \item אם \textenglish{$v \gg \tfrac{b}{c}$} --- שולט האיבר הריבועי:
+        \textenglish{$\hvec{f} \approx -c v^2\hat{v}$} (קירוב ריבועי).
+\end{itemize}
+\end{tcolorbox}
+
+\textbf{יחידות המידה של \textenglish{$c$}:} מאחר ש-\textenglish{$[\,b\,] = [\,c\,]\cdot\frac{\text{m}}{\text{s}}$},
+\[
+  [\,c\,] = \frac{\text{kg}/\text{s}}{\text{m}/\text{s}} = \frac{\text{kg}}{\text{m}}
+\]
+
+הקבוע \textenglish{$c$} מוגדר פיזיקלית גם כ:
+\begin{tcolorbox}[resultbox]
+\[
+  c = \tfrac{1}{2}\,\rho\,A\,C_d
+\]
+\end{tcolorbox}
+כאשר \textenglish{$\rho$} --- צפיפות התווך, \textenglish{$A$} --- שטח החתך, \textenglish{$C_d$} --- מקדם הגרר.
+
+\subsection*{1.4 מסקנה --- ביטוי הכוח לפי אזורי מהירות}
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{אזור מהירות} & \textbf{ביטוי כוח הגרר} \\
+\hline
+מהירויות נמוכות  & \textenglish{$\hvec{f} = -b\hvec{v}$} \\
+\hline
+מהירויות בינוניות & \textenglish{$\hvec{f} = -(b v + c v^2)\hat{v}$} \\
+\hline
+מהירויות גבוהות  & \textenglish{$\hvec{f} = -c v^2\hat{v}$} \\
+\hline
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section*{2. בעיה ראשונה --- גוף עם כוח גרר בלבד}
+% ============================================================
+
+\subsection*{2.1 הגדרת הבעיה}
+
+גוף נע בתווך, והכוח \textbf{היחיד} הפועל עליו הוא כוח הגרר (אין כבידה ואין כוחות נוספים).
+תנאי התחלה:
+\[
+  \hvec{v}(0) = v_0\,\hat{x}
+\]
+
+\subsection*{2.2 דיאגרמת כוחות}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2, >={Stealth[length=2.5mm]}]
+  % axes
+  \draw[->, thick] (-0.6, 0) -- (4.6, 0) node[right] {\textenglish{$\hat{x}$}};
+  \draw[->, thick] (0, -0.6) -- (0, 1.9) node[above] {\textenglish{$\hat{y}$}};
+  % mass
+  \draw[thick, fill=blue!15] (1.6, 0.4) rectangle (2.4, 1.2);
+  \node at (2.0, 0.8) {\textenglish{$m$}};
+  % velocity (right)
+  \draw[->, very thick, green!55!black] (2.4, 1.0) -- (4.0, 1.0);
+  \node[green!55!black, above] at (3.2, 1.05) {\textenglish{$\hvec{v}_0 = v_0\hat{x}$}};
+  % drag (left)
+  \draw[->, very thick, red] (1.6, 0.6) -- (0.3, 0.6);
+  \node[red, below] at (0.95, 0.55) {\textenglish{$\hvec{F}_{\text{drag}} = -b\hvec{v}$}};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{2.3 חוק שני של ניוטון}
+
+\[
+  -b\hvec{v} = m\hvec{a}
+  \qquad\Longrightarrow\qquad
+  \hvec{a} = -\frac{b}{m}\hvec{v}
+\]
+
+מאחר ש-\textenglish{$\hvec{a} = \dot{\hvec{v}}$}, מתקבלת משוואה דיפרנציאלית. כל המהירות ההתחלתית בכיוון \textenglish{$\hat{x}$}, ולכן התנועה נשארת על ציר \textenglish{$x$}:
+
+\begin{tcolorbox}[resultbox]
+\[
+  \dot{v}_x = -\frac{b}{m}\,v_x
+\]
+\end{tcolorbox}
+
+\subsection*{2.4 פתרון אנליטי}
+
+\begin{tcolorbox}[notebox, title={אופי המשוואה}]
+זוהי משוואה דיפרנציאלית \textbf{ליניארית מסדר ראשון}. נפתור אותה בשיטת \textbf{ניחוש פתרון}:
+ננסה \textenglish{$v_x = A t$} --- אינו מקיים את המשוואה. ננסה צורה מעריכית \textenglish{$v_x(t) = A e^{kt}$}.
+\end{tcolorbox}
+
+נציב את הניחוש המעריכי:
+\[
+  \dot{v}_x = kA e^{kt} = -\frac{b}{m}\,A e^{kt}
+  \qquad\Longrightarrow\qquad
+  k = -\frac{b}{m}
+\]
+
+הפתרון הכללי הוא \textenglish{$v_x(t) = A e^{-\frac{b}{m}t}$}. נציב תנאי התחלה \textenglish{$v_x(0) = v_0$}:
+\[
+  v_x(0) = A \quad\Longrightarrow\quad A = v_0
+\]
+
+\begin{tcolorbox}[resultbox, title={דעיכת מהירות תחת גרר}]
+\[
+  v_x(t) = v_0\, e^{-\frac{b}{m}t}
+\]
+\end{tcolorbox}
+
+המהירות דועכת אקספוננציאלית לאפס (אך מתאפסת רק בגבול \textenglish{$t\to\infty$}):
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=10cm, height=5.6cm,
+  xlabel={\textenglish{$t$ [s]}},
+  ylabel={\textenglish{$v_x$ [m/s]}},
+  domain=0:6, samples=100,
+  axis lines=left,
+  xmin=0, xmax=6, ymin=0, ymax=1.1,
+  grid=both, grid style={gray!20},
+  legend pos=north east,
+]
+\addplot[blue, very thick] {exp(-x)};
+\addlegendentry{\textenglish{$v_x(t)=v_0 e^{-(b/m)t}$}}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsection*{2.5 שיטה נומרית --- שיטת אוילר}
+
+כאשר אין פתרון אנליטי נוח, פותרים נומרית. מהגדרת הנגזרת:
+\[
+  \hvec{a} = \dot{\hvec{v}} \approx \frac{\hvec{v}(t+\Delta t) - \hvec{v}(t)}{\Delta t}
+\]
+נבודד את המהירות בצעד הבא:
+
+\begin{tcolorbox}[resultbox, title={צעד אוילר}]
+\[
+  \hvec{v}(t+\Delta t) = \hvec{v}(t) + \hvec{a}\,\Delta t
+\]
+\end{tcolorbox}
+
+\subsection*{2.6 מימוש בפייתון --- גרר בלבד}
+
+\noindent\textbf{אינטגרציית אוילר עבור תנועה תחת גרר בלבד, מול הפתרון האנליטי:}
+
+\begin{LTR}
+\begin{lstlisting}[style=pycode]
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def zero_cross(ar):
+    """Return indices where the array changes sign."""
+    H1t = np.sign(ar)
+    H1s = np.abs(H1t[:-1] - H1t[1:])
+    return np.nonzero(H1s)[0]
+
+
+# Parameters
+b = 1.0    # drag coefficient [kg/s]
+m = 1.0    # mass [kg]
+v0 = 1.0   # initial velocity [m/s]
+
+stop = 10  # simulation end time [s]
+dt = 0.01  # time step [s]
+
+# Arrays
+t = np.arange(0, stop, dt)
+v = np.zeros_like(t)
+v[0] = v0
+
+# Euler integration
+for i in range(1, len(t)):
+    a = -(b / m) * v[i - 1]    # a = -b/m * v
+    v[i] = v[i - 1] + a * dt   # Euler step
+
+# Analytical solution (for comparison)
+v_exact = v0 * np.exp(-(b / m) * t)
+
+# Plot
+plt.figure(figsize=(8, 4))
+plt.plot(t, v, label='Numerical (Euler)', linewidth=2)
+plt.plot(t, v_exact, label='Analytical',
+         linestyle='--', linewidth=2, color='red')
+plt.xlabel('t [s]')
+plt.ylabel(r'$v_x$ [m/s]')
+plt.title(r'Drag Force: $v_x(t) = v_0 e^{-(b/m) t}$')
+plt.legend()
+plt.grid(True, alpha=0.4)
+plt.tight_layout()
+plt.show()
+\end{lstlisting}
+\end{LTR}
+
+% ============================================================
+\section*{3. בעיה שנייה --- זריקה אנכית עם כבידה וגרר}
+% ============================================================
+
+\subsection*{3.1 הגדרת הבעיה}
+
+גוף נזרק אנכית כלפי מעלה. עליו פועלים \textbf{שני} כוחות: כוח הכבידה וכוח הגרר. נבחר את ציר \textenglish{$\hat{y}$} כלפי מעלה. הנתונים:
+\[
+  m = 1\;\text{kg},\quad v_0 = 2\;\tfrac{\text{m}}{\text{s}},\quad
+  b = 0.3\;\tfrac{1}{\text{s}},\quad g = 9.8\;\tfrac{\text{m}}{\text{s}^2}
+\]
+
+\begin{tcolorbox}[notebox, title={מה נחשב}]
+\begin{enumerate}
+  \item דיאגרמת הכוחות.
+  \item חוק שני $\to$ המשוואה הדיפרנציאלית.
+  \item מהירות הגוף כפונקציה של הזמן.
+  \item הזמן בנקודה הגבוהה ביותר.
+  \item מהירות הגבול (\textenglish{terminal velocity}) של הגוף.
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection*{3.2 דיאגרמת כוחות}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.1, >={Stealth[length=2.5mm]}]
+  % y axis
+  \draw[->, thick] (0, -2.3) -- (0, 3.3) node[above] {\textenglish{$\hat{y}$}};
+  % mass
+  \draw[thick, fill=blue!15] (-0.4, 0) rectangle (0.4, 0.8);
+  \node at (0, 0.4) {\textenglish{$m$}};
+  % initial velocity (up)
+  \draw[->, very thick, green!55!black] (0.95, 0.4) -- (0.95, 2.3);
+  \node[green!55!black, right] at (1.0, 1.35) {\textenglish{$\hvec{v}_0$}};
+  % gravity (down)
+  \draw[->, very thick, red] (0, 0.4) -- (0, -1.7);
+  \node[red, right] at (0.07, -0.95) {\textenglish{$-mg\hat{y}$}};
+  % drag (down, opposing upward motion)
+  \draw[->, very thick, orange!85!black] (-0.95, 0.4) -- (-0.95, -1.0);
+  \node[orange!85!black, left] at (-1.0, -0.3) {\textenglish{$\hvec{f} = -b\hvec{v}$}};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{3.3 חוק שני $\to$ משוואה דיפרנציאלית}
+
+בציר \textenglish{$y$}, הכבידה כלפי מטה והגרר מנוגד למהירות:
+\[
+  m a_y = -mg - b v_y
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  \dot{v}_y = -g - \frac{b}{m}\,v_y
+\]
+\end{tcolorbox}
+
+\subsection*{3.4 פתרון --- מהירות כפונקציה של הזמן}
+
+\textbf{פתרון כללי.} ננחש צורה מעריכית עם קבוע: \textenglish{$v_y(t) = A e^{kt} + B$}. נציב:
+\[
+  kA e^{kt} = -\frac{b}{m}\bigl(A e^{kt} + B\bigr) - g
+\]
+השוואת איברים נותנת:
+\[
+  k = -\frac{b}{m},
+  \qquad
+  0 = -\frac{b}{m}B - g
+  \;\Longrightarrow\;
+  B = -\frac{mg}{b}
+\]
+לכן הפתרון הכללי:
+\[
+  v_y^{\text{GEN}}(t) = A e^{-\frac{b}{m}t} - \frac{mg}{b}
+\]
+
+\textbf{פתרון פרטי.} מתנאי ההתחלה \textenglish{$v_y(0) = v_0$}:
+\[
+  v_y(0) = A - \frac{mg}{b} = v_0
+  \;\Longrightarrow\;
+  A = v_0 + \frac{mg}{b}
+\]
+
+\begin{tcolorbox}[resultbox, title={מהירות אנכית תחת כבידה וגרר}]
+\[
+  v_y(t) = \left(v_0 + \frac{mg}{b}\right) e^{-\frac{b}{m}t} - \frac{mg}{b}
+\]
+\end{tcolorbox}
+
+\subsection*{3.5 הזמן בנקודה הגבוהה ביותר}
+
+בנקודה הגבוהה ביותר המהירות מתאפסת, \textenglish{$v_y = 0$}:
+\[
+  \left(v_0 + \frac{mg}{b}\right) e^{-\frac{b}{m}t} = \frac{mg}{b}
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  t_{\max H} = \frac{m}{b}\,\ln\!\left(1 + \frac{b v_0}{mg}\right)
+\]
+\end{tcolorbox}
+
+מספרית: \textenglish{$t_{\max H} = \tfrac{1}{0.3}\ln\!\left(1 + \tfrac{0.3\cdot 2}{9.8}\right) \approx 0.20\;\text{s}$}.
+
+\subsection*{3.6 מהירות הגבול (\textenglish{Terminal Velocity})}
+
+כאשר \textenglish{$t\to\infty$} האיבר המעריכי שואף לאפס:
+
+\begin{tcolorbox}[resultbox]
+\[
+  v_y(t\to\infty) = -\frac{mg}{b}
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox]
+זוהי \textbf{מהירות הגבול}: המהירות הקבועה שבה כוח הגרר מאזן בדיוק את הכבידה, ולכן התאוצה מתאפסת. מספרית \textenglish{$v_\infty = -\tfrac{1\cdot 9.8}{0.3} \approx -32.7\;\tfrac{\text{m}}{\text{s}}$} (כלפי מטה).
+\end{tcolorbox}
+
+הגרף מתחיל ב-\textenglish{$+2\,\tfrac{\text{m}}{\text{s}}$}, חוצה אפס בנקודה הגבוהה, ושואף למהירות הגבול:
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=11cm, height=6.4cm,
+  xlabel={\textenglish{$t$ [s]}},
+  ylabel={\textenglish{$v_y$ [m/s]}},
+  domain=0:25, samples=120,
+  axis lines=left,
+  xmin=0, xmax=25, ymin=-35, ymax=6,
+  grid=both, grid style={gray!20},
+  legend pos=south east,
+]
+\addplot[blue, very thick] {34.6667*exp(-0.3*x) - 32.6667};
+\addlegendentry{\textenglish{$v_y(t)$}}
+\addplot[red, dashed, thick] {-32.6667};
+\addlegendentry{\textenglish{$v_\infty = -mg/b$}}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsection*{3.7 מימוש בפייתון --- כבידה וגרר}
+
+\noindent\textbf{אינטגרציית אוילר עבור זריקה אנכית, מול הפתרון האנליטי:}
+
+\begin{LTR}
+\begin{lstlisting}[style=pycode]
+import numpy as np
+import matplotlib.pyplot as plt
+
+# set values for parameters
+m = 1      # kg
+v0 = 2     # m/s
+g = 9.8    # m/s^2
+b = 0.3    # kg/s
+
+# choose a time step and last t
+T, dt = 25, 1e-4   # s
+t = np.arange(0, T, dt)
+v = np.zeros_like(t)
+v[0] = v0          # set initial velocity
+
+# analytic solution
+v_an = (v0 + m * g / b) * np.exp(-t * b / m) - m * g / b
+
+for i in range(len(t) - 1):     # Euler's method
+    a = -b / m * v[i] - g
+    v[i + 1] = v[i] + a * dt
+
+# plot the results
+fig, ax = plt.subplots()
+ax.plot(t, v, 'o', label='numeric calculation')
+ax.plot(t, v_an, '--', label='analytic result')
+ax.set_ylabel('$v$ (m/s)')
+ax.set_xlabel('$t$ (s)')
+ax.legend(loc='upper right')
+\end{lstlisting}
+\end{LTR}
+
+% ============================================================
+\section*{סיכום: מבט-על}
+% ============================================================
+
+\begin{tcolorbox}[warnbox, title={נקודות מפתח לזכור}]
+\begin{enumerate}
+  \item \textbf{כוח גרר} מנוגד למהירות ומתאפס במנוחה; הוא גדל עם המהירות.
+  \item \textbf{קירוב ליניארי:} \textenglish{$\hvec{f} = -b\hvec{v}$}, \textenglish{$[\,b\,]=\text{kg}/\text{s}$}.
+        \textbf{קירוב ריבועי:} \textenglish{$\hvec{f} = -c v^2\hat{v}$}, \textenglish{$[\,c\,]=\text{kg}/\text{m}$};
+        המעבר סביב \textenglish{$v \sim b/c$}.
+  \item \textbf{גרר בלבד:} דעיכה אקספוננציאלית \textenglish{$v_x(t) = v_0 e^{-(b/m)t}$}.
+  \item \textbf{כבידה + גרר:} \textenglish{$v_y(t) = \left(v_0 + \tfrac{mg}{b}\right)e^{-(b/m)t} - \tfrac{mg}{b}$},
+        עם מהירות גבול \textenglish{$v_\infty = -mg/b$}.
+  \item \textbf{נקודה גבוהה:} \textenglish{$t_{\max H} = \tfrac{m}{b}\ln\!\left(1 + \tfrac{bv_0}{mg}\right)$}.
+  \item \textbf{שיטת אוילר:} \textenglish{$\hvec{v}(t+\Delta t) = \hvec{v}(t) + \hvec{a}\,\Delta t$} --- פתרון נומרי כללי.
+\end{enumerate}
+\end{tcolorbox}
+
+\end{document}
