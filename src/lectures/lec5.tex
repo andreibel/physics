@@ -1,0 +1,381 @@
+%!TEX program = xelatex
+% ============================================================
+%  עבודה ואנרגיה (Work & Energy)
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\tcbset{
+  resultbox/.style={
+    enhanced, colback=white, colframe=black,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+  },
+  notebox/.style={
+    enhanced, breakable,
+    colback=gray!8, colframe=gray!50,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+    fonttitle=\bfseries,
+  },
+  warnbox/.style={
+    enhanced, breakable,
+    colback=red!5, colframe=red!60,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+  defbox/.style={
+    enhanced, breakable,
+    colback=blue!5, colframe=blue!50,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing,
+                decorations.pathmorphing, patterns} % pathmorphing: spring coil
+\usepackage[a4paper, top=2cm, bottom=2cm,
+            left=2cm, right=2cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.3}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}[\titlerule]
+\titleformat{\subsection}{\bfseries}{\thesubsection}{0.5em}{}
+
+\setlength{\headheight}{15pt}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textenglish{\textbf{Work \& Energy}}}
+\lhead{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{hebrew}
+\setotherlanguage{english}
+\setmainfont{Times New Roman}
+\newfontfamily\hebrewfont{Times New Roman}
+\newfontfamily\englishfont{Times New Roman}
+\newfontfamily\hebrewfonttt{Courier New}
+
+% ── Mandatory bidi + TikZ fix (after polyglossia) ───────────
+% Forces every tikzpicture into LTR so labels do not throw
+% pgfkeys '/tikz/{right}' errors or render mirrored.
+\usepackage{etoolbox}
+\BeforeBeginEnvironment{tikzpicture}{\begin{LTR}}
+\AfterEndEnvironment{tikzpicture}{\end{LTR}}
+
+\newcommand{\hvec}[1]{\overrightarrow{#1}}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ── Title ────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries עבודה ואנרגיה \textenglish{(Work \& Energy)}}\\[6pt]
+  \rule{\linewidth}{0.8pt}
+\end{center}
+\vspace{0.5cm}
+
+עד כה תיארנו תנועה דרך כוחות ותאוצות. כעת נציג גישה משלימה --- \textbf{עבודה ואנרגיה} --- המאפשרת לפתור בעיות רבות מבלי לפתור את משוואת התנועה במלואה. נתחיל מכלי עזר מתמטיים, נגזור מהם את משפט עבודה-אנרגיה, ונדגים אותו בכמה בעיות.
+
+% ============================================================
+\section*{1. כלי עזר מתמטיים}
+% ============================================================
+
+\subsection*{1.1 משפט היסוד של החדו"א}
+
+\begin{tcolorbox}[defbox, title={משפט היסוד של החשבון הדיפרנציאלי והאינטגרלי}]
+\[
+  \int_a^b F'(x)\,dx = F(b) - F(a)
+\]
+האינטגרל של נגזרת שווה להפרש ערכי הפונקציה בקצוות הקטע.
+\end{tcolorbox}
+
+\subsection*{1.2 זהות לנגזרת של ריבוע המהירות}
+
+נחשב את הנגזרת בזמן של \textenglish{$v^2 = \hvec{v}\cdot\hvec{v}$}:
+\[
+  \frac{d}{dt}v^2 = \frac{d}{dt}\bigl(\hvec{v}\cdot\hvec{v}\bigr)
+  = \frac{d\hvec{v}}{dt}\cdot\hvec{v} + \hvec{v}\cdot\frac{d\hvec{v}}{dt}
+  = 2\,\hvec{v}\cdot\frac{d\hvec{v}}{dt}
+  = 2\,\hvec{a}\cdot\hvec{v}
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{a}\cdot\hvec{v} = \tfrac{1}{2}\,\frac{d}{dt}v^2
+\]
+\end{tcolorbox}
+
+זוהי הזהות שתעמוד בלב גזירת משפט עבודה-אנרגיה.
+
+\subsection*{1.3 שיטת ההצבה (אינטגרציה)}
+
+לחישוב אינטגרל \textenglish{$\int_{x_1}^{x_2} f(x)\,dx$}, אם קיימת פונקציה \textenglish{$u = u(x)$} ופונקציה \textenglish{$g$} כך ש-\textenglish{$g(u) = f(x)$}, מציבים \textenglish{$u' = \tfrac{du}{dx}$} ומקבלים:
+
+\begin{tcolorbox}[notebox, title={החלפת משתנה}]
+\[
+  \int_{x_1}^{x_2} f(x)\,dx
+  = \int_{u(x_1)}^{u(x_2)} \frac{g(u)}{u'(x)}\,du
+\]
+\end{tcolorbox}
+
+\textbf{דוגמה.} נחשב \textenglish{$\displaystyle\int_0^{\pi/3}\tan x\,dx$}. נציב \textenglish{$u = \cos x$}, ולכן \textenglish{$du = -\sin x\,dx$}:
+\[
+  \int_0^{\pi/3}\frac{\sin x}{\cos x}\,dx
+  = \int_{\cos 0}^{\cos(\pi/3)} \frac{-\,du}{u}
+  = \Bigl[-\ln|u|\Bigr]_{1}^{1/2}
+  = -\ln\tfrac{1}{2} + \ln 1
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  \int_0^{\pi/3}\tan x\,dx = \ln 2
+\]
+\end{tcolorbox}
+
+% ============================================================
+\section*{2. גזירת משפט עבודה-אנרגיה}
+% ============================================================
+
+נקודת המוצא היא החוק השני של ניוטון, \textenglish{$\hvec{F} = m\hvec{a}$}, ו"נשחק" עם המשוואה:
+
+\textbf{שלב 1 --- מכפלה סקלרית ב-\textenglish{$\hvec{v}$}:}
+\[
+  \hvec{F}\cdot\hvec{v} = m\,\hvec{a}\cdot\hvec{v}
+\]
+
+\textbf{שלב 2 --- שימוש בזהות מסעיף 1.2} (\textenglish{$\hvec{a}\cdot\hvec{v} = \tfrac12\frac{d}{dt}v^2$}):
+\[
+  \hvec{F}\cdot\hvec{v} = \tfrac{1}{2}m\,\frac{d}{dt}v^2
+\]
+
+\textbf{שלב 3 --- אינטגרציה לפי הזמן} בין \textenglish{$t_1$} ל-\textenglish{$t_2$}:
+\[
+  \int_{t_1}^{t_2}\hvec{F}\cdot\hvec{v}\,dt
+  = \tfrac{1}{2}m\int_{t_1}^{t_2}\frac{d}{dt}v^2\,dt
+  = \tfrac{1}{2}m\,v^2(t_2) - \tfrac{1}{2}m\,v^2(t_1)
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  \int_{t_1}^{t_2}\hvec{F}\cdot\hvec{v}\,dt
+  = \tfrac{1}{2}m v_2^2 - \tfrac{1}{2}m v_1^2
+\]
+\end{tcolorbox}
+
+שני האגפים "מתבקשים" להגדרות משלהם, שנציג כעת.
+
+% ============================================================
+\section*{3. אנרגיה קינטית, עבודה והספק}
+% ============================================================
+
+\subsection*{3.1 אנרגיה קינטית}
+
+\begin{tcolorbox}[defbox, title={אנרגיה קינטית (\textenglish{Kinetic Energy})}]
+\[
+  E_k \equiv \tfrac{1}{2}m v^2
+\]
+גודל \textbf{סקלרי אי-שלילי}. יחידות: \textenglish{$[E_k] = \text{kg}\cdot\text{m}^2/\text{s}^2 = \text{J}$} (ג'אול).
+\end{tcolorbox}
+
+\subsection*{3.2 עבודה}
+
+האגף השמאלי מסעיף 2 מגדיר את \textbf{העבודה} של הכוח:
+
+\begin{tcolorbox}[defbox, title={עבודה (\textenglish{Work})}]
+\[
+  W \equiv \int_{t_1}^{t_2}\hvec{F}\cdot\hvec{v}\,dt
+\]
+יחידות: \textenglish{$[W] = \text{J}$}.
+\end{tcolorbox}
+
+\subsection*{3.3 הספק}
+
+קצב ביצוע העבודה בזמן נקרא \textbf{הספק}:
+
+\begin{tcolorbox}[defbox, title={הספק (\textenglish{Power})}]
+\[
+  P \equiv \frac{dW}{dt} = \hvec{F}\cdot\hvec{v},
+  \qquad
+  W = \int P\,dt
+\]
+גודל סקלרי; הסימן נקבע ע"י הזווית בין \textenglish{$\hvec{F}$} ל-\textenglish{$\hvec{v}$}. יחידות: \textenglish{$[P] = \text{N}\cdot\text{m}/\text{s} = \text{J}/\text{s} = \text{W}$} (וואט).
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox, title={יחידות}]
+\textenglish{$\text{J} = \text{N}\cdot\text{m} = \text{kg}\cdot\text{m}^2/\text{s}^2$}. יחידות אנרגיה נפוצות: ג'אול, קלוריה, קילו-וואט-שעה (\textenglish{kWh}), ו-\textenglish{BTU}. ההספק נמדד בוואט.
+\end{tcolorbox}
+
+\subsection*{3.4 משפט עבודה-אנרגיה}
+
+נחבר את ההגדרות עם התוצאה מסעיף 2: האגף הימני הוא השינוי באנרגיה הקינטית, והאגף השמאלי הוא העבודה של הכוח השקול.
+
+\begin{tcolorbox}[resultbox, title={משפט עבודה-אנרגיה}]
+\[
+  W = \Delta E_k = E_k(t_2) - E_k(t_1)
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox]
+ובניסוח רגעי: ההספק של הכוח השקול שווה לקצב השינוי של האנרגיה הקינטית,
+\[
+  P = \frac{dE_k}{dt}.
+\]
+\end{tcolorbox}
+
+% ============================================================
+\section*{4. דוגמה --- זמן האצה של מכונית}
+% ============================================================
+
+\textbf{נתון:} מכונית במסה \textenglish{$m = 1500$ kg}, וההספק המקסימלי של המנוע הוא \textenglish{$P = 74500$ W}. \textbf{נדרש:} זמן ההאצה מ-\textenglish{$0$} ל-\textenglish{$100$ km/h}.
+
+מאחר שההספק שווה לקצב השינוי של האנרגיה הקינטית, \textenglish{$P = \tfrac{d}{dt}\!\left(\tfrac12 m v^2\right)$}. נבצע אינטגרציה מהמנוחה (\textenglish{$v(0)=0$}) עד \textenglish{$v_{\max}$}, בהנחת הספק קבוע:
+\[
+  \int_0^{t} P\,dt = \tfrac{1}{2}m v_{\max}^2 - 0
+  \qquad\Longrightarrow\qquad
+  P\,t = \tfrac{1}{2}m v_{\max}^2
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  t = \frac{m\,v_{\max}^2}{2P}
+\]
+\end{tcolorbox}
+
+נציב \textenglish{$v_{\max} = 100\;\text{km/h} \approx 30\;\text{m/s}$}:
+\[
+  t = \frac{1500 \cdot 30^2}{2 \cdot 74500} \approx 9\;\text{s}
+\]
+
+% ============================================================
+\section*{5. חישוב עבודה כשהכוח תלוי במיקום}
+% ============================================================
+
+כאשר ידועים וקטור הכוח ווקטור המהירות, העבודה היא אינטגרל פשוט. אך לעיתים איננו יודעים מראש את \textenglish{$\hvec{F}(t)$}, אלא רק כיצד הכוח תלוי \textbf{במיקום} (כמו כוח הכבידה או כוח קפיץ). נפרק לרכיבים:
+\[
+  \hvec{F}\cdot\hvec{v} = F_x v_x + F_y v_y + F_z v_z
+\]
+
+מאחר ש-\textenglish{$v_x = \tfrac{dx}{dt}$}, מתקבל \textenglish{$\int F_x v_x\,dt = \int F_x \tfrac{dx}{dt}\,dt = \int_{x_1}^{x_2} F_x\,dx$}, וכך גם עבור \textenglish{$y, z$}:
+
+\begin{tcolorbox}[resultbox]
+\[
+  W = \int \hvec{F}\cdot\hvec{v}\,dt
+    = \int_{x_1}^{x_2} F_x\,dx + \int_{y_1}^{y_2} F_y\,dy + \int_{z_1}^{z_2} F_z\,dz
+    = \int_{\hvec{r}_1}^{\hvec{r}_2} \hvec{F}\cdot d\hvec{r}
+\]
+\end{tcolorbox}
+
+\textbf{מקרה פרטי --- כוח קבוע לאורך התנועה:} העבודה מצטמצמת ל-
+\[
+  W = F_x\,(x_2 - x_1) = F_x\,\Delta x.
+\]
+
+\subsection*{5.1 דוגמה 1 --- כוח בזווית}
+
+על גוף פועל הכוח \textenglish{$\hvec{F} = F_0\cos\alpha\,\hat{x} + F_0\sin\alpha\,\hat{y}$}, והגוף נע לאורך ציר \textenglish{$x$} מ-\textenglish{$x_1$} ל-\textenglish{$x_2$} (ללא תזוזה בכיוון \textenglish{$y$}).
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0, >={Stealth[length=2.5mm]}]
+  % axes
+  \draw[->, thick] (-0.4, 0) -- (6.6, 0) node[right] {\textenglish{$x$}};
+  \draw[->, thick] (0, -0.4) -- (0, 2.7) node[above] {\textenglish{$y$}};
+  % initial (solid) box
+  \draw[thick, fill=blue!12] (1.2, 0) rectangle (2.2, 1.0);
+  \coordinate (P) at (1.7, 0.5);
+  % force at angle alpha
+  \draw[->, very thick, red] (P) -- ++(38:1.9);
+  \node[red, right] at ($(P)+(38:1.95)$) {\textenglish{$\hvec{F}_0$}};
+  % horizontal reference + angle arc
+  \draw[dashed, gray] (P) -- ++(1.6, 0);
+  \draw[->] ($(P)+(1.0,0)$) arc (0:38:1.0);
+  \node at ($(P)+(19:1.25)$) {\textenglish{$\alpha$}};
+  % final (dashed) box
+  \draw[thick, dashed] (4.4, 0) rectangle (5.4, 1.0);
+  % position ticks
+  \draw (1.7, 0.06) -- (1.7, -0.06);
+  \node[below] at (1.7, -0.12) {\textenglish{$x_1$}};
+  \draw (4.9, 0.06) -- (4.9, -0.06);
+  \node[below] at (4.9, -0.12) {\textenglish{$x_2$}};
+\end{tikzpicture}
+\end{center}
+
+רק הרכיב \textenglish{$F_x$} מבצע עבודה, שכן אין תזוזה בכיוון \textenglish{$y$} (גבולות האינטגרל ב-\textenglish{$y$} שווים):
+\[
+  W = \int_{x_1}^{x_2} F_0\cos\alpha\,dx + \int_{y_1}^{y_1} F_0\sin\alpha\,dy
+    = F_0\cos\alpha\,(x_2 - x_1)
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  W = F_0\cos\alpha\,(x_2 - x_1)
+\]
+\end{tcolorbox}
+
+\subsection*{5.2 דוגמה 2 --- כוח קפיץ}
+
+קפיץ מפעיל על הגוף כוח לפי חוק הוק, \textenglish{$\hvec{F} = -k x\,\hat{x}$} (תלוי במיקום). הגוף נע מ-\textenglish{$x_1$} ל-\textenglish{$x_2$}.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0, >={Stealth[length=2.5mm]}]
+  % wall
+  \fill[pattern=north east lines] (-0.35, 0) rectangle (0, 1.5);
+  \draw[thick] (0, 0) -- (0, 1.5);
+  % spring coil
+  \draw[thick, decorate,
+        decoration={coil, aspect=0.6, segment length=4.5mm, amplitude=3mm}]
+        (0, 0.7) -- (2.1, 0.7);
+  % initial (solid) box
+  \draw[thick, fill=blue!12] (2.1, 0.2) rectangle (2.9, 1.2);
+  % final (dashed) box
+  \draw[thick, dashed] (3.7, 0.2) rectangle (4.5, 1.2);
+  % force label
+  \node[red] at (2.5, 1.7) {\textenglish{$\hvec{F} = -k x\,\hat{x}$}};
+  % x-axis
+  \draw[->, thick] (-0.35, -0.25) -- (5.3, -0.25) node[right] {\textenglish{$x$}};
+  \draw (2.5, -0.18) -- (2.5, -0.32);
+  \node[below] at (2.5, -0.38) {\textenglish{$x_1$}};
+  \draw (4.1, -0.18) -- (4.1, -0.32);
+  \node[below] at (4.1, -0.38) {\textenglish{$x_2$}};
+\end{tikzpicture}
+\end{center}
+
+העבודה מחושבת ישירות מהאינטגרל לפי המיקום:
+\[
+  W = \int_{x_1}^{x_2} (-k x)\,dx = -k\left[\frac{x^2}{2}\right]_{x_1}^{x_2}
+\]
+
+\begin{tcolorbox}[resultbox]
+\[
+  W = -\tfrac{1}{2}k\bigl(x_2^2 - x_1^2\bigr)
+\]
+\end{tcolorbox}
+
+% ============================================================
+\section*{סיכום: מבט-על}
+% ============================================================
+
+\begin{tcolorbox}[warnbox, title={נקודות מפתח לזכור}]
+\begin{enumerate}
+  \item \textbf{זהות הבסיס:} \textenglish{$\hvec{a}\cdot\hvec{v} = \tfrac12\frac{d}{dt}v^2$} --- ממנה נגזר כל המשפט.
+  \item \textbf{אנרגיה קינטית:} \textenglish{$E_k = \tfrac12 m v^2$} (גודל סקלרי, יחידות \textenglish{J}).
+  \item \textbf{עבודה והספק:} \textenglish{$W = \int \hvec{F}\cdot\hvec{v}\,dt$}, \textenglish{$P = \hvec{F}\cdot\hvec{v} = \tfrac{dW}{dt}$} (יחידות \textenglish{W}).
+  \item \textbf{משפט עבודה-אנרגיה:} \textenglish{$W = \Delta E_k$}; ובצורה רגעית \textenglish{$P = \tfrac{dE_k}{dt}$}.
+  \item \textbf{כוח תלוי-מיקום:} \textenglish{$W = \int \hvec{F}\cdot d\hvec{r} = \int F_x\,dx\,(+\,y,z)$}; כוח קבוע: \textenglish{$W = F_x\,\Delta x$}.
+  \item \textbf{קפיץ:} \textenglish{$W = -\tfrac12 k(x_2^2 - x_1^2)$}.
+\end{enumerate}
+\end{tcolorbox}
+
+\end{document}
