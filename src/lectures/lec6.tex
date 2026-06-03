@@ -1,0 +1,671 @@
+%!TEX program = xelatex
+% ============================================================
+%  הרצאה 6 — עבודה ואנרגיה II
+%  (Work & Energy II — Conservative Forces & Energy Conservation)
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\tcbset{
+  resultbox/.style={
+    enhanced, colback=white, colframe=black,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+  },
+  notebox/.style={
+    enhanced, breakable,
+    colback=gray!8, colframe=gray!50,
+    boxrule=0.8pt, arc=3pt,
+    left=2pt, right=2pt, top=1.5pt, bottom=1.5pt,
+    fonttitle=\bfseries,
+  },
+  warnbox/.style={
+    enhanced, breakable,
+    colback=red!5, colframe=red!60,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+  defbox/.style={
+    enhanced, breakable,
+    colback=blue!5, colframe=blue!50,
+    boxrule=0.8pt, arc=3pt,
+    left=3pt, right=3pt, top=2pt, bottom=2pt,
+    fonttitle=\bfseries,
+  },
+}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing, patterns}
+\usepackage{pgfplots}          % velocity/energy graphs (standard in TeXLive)
+\pgfplotsset{compat=1.18}
+\usepackage[a4paper, top=2cm, bottom=2cm,
+            left=2cm, right=2cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.3}
+
+% ── listings must be loaded BEFORE polyglossia/bidi ──────────
+\usepackage{listings}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}[\titlerule]
+\titleformat{\subsection}{\bfseries}{\thesubsection}{0.5em}{}
+
+\setlength{\headheight}{15pt}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textenglish{\textbf{Work \& Energy II}}}
+\lhead{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{hebrew}
+\setotherlanguage{english}
+\setmainfont{Times New Roman}
+\newfontfamily\hebrewfont{Times New Roman}
+\newfontfamily\englishfont{Times New Roman}
+\newfontfamily\hebrewfonttt{Courier New}
+\setmonofont{Courier New}      % monospace for Python listings
+
+% ── Mandatory bidi + TikZ fix (after polyglossia) ───────────
+% Forces every tikzpicture into LTR so Hebrew labels do not throw
+% pgfkeys '/tikz/{right}' errors or render mirrored.
+\usepackage{etoolbox}
+\BeforeBeginEnvironment{tikzpicture}{\begin{LTR}}
+\AfterEndEnvironment{tikzpicture}{\end{LTR}}
+
+% ── Python code listings (package loaded earlier, before bidi) ─
+\definecolor{codekw}{RGB}{0,0,180}
+\definecolor{codecmt}{RGB}{34,120,34}
+\definecolor{codestr}{RGB}{170,80,0}
+\lstdefinestyle{pycode}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{codekw}\bfseries,
+  commentstyle=\color{codecmt}\itshape,
+  stringstyle=\color{codestr},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!50},
+  framerule=0.6pt,
+  framesep=5pt,
+  columns=fullflexible,
+  keepspaces=true,
+  aboveskip=6pt, belowskip=4pt,
+}
+
+\newcommand{\hvec}[1]{\overrightarrow{#1}}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ── Title ────────────────────────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries עבודה ואנרגיה \textenglish{(Work \& Energy II)}}\\[6pt]
+  \rule{\linewidth}{0.8pt}
+\end{center}
+\vspace{0.5cm}
+
+בהרצאה הקודמת הגדרנו עבודה כאינטגרל מסלולי של הכוח, וראינו את משפט עבודה--אנרגיה. בהרצאה זו נגלה ש\textbf{העבודה תלויה במסלול} עבור כוחות מסוימים אך \textbf{אינה תלויה במסלול} עבור אחרים. הבחנה זו תוביל אותנו אל מושג \textbf{הכוח המשמר}, אל \textbf{האנרגיה הפוטנציאלית}, ואל אחד העקרונות החשובים בפיזיקה --- \textbf{שימור האנרגיה המכנית}.
+
+% ============================================================
+\section*{0. חזרה --- עבודה, אנרגיה והספק}
+% ============================================================
+
+לפני שנמשיך, נסכם את הכלים שהוגדרו בהרצאה הקודמת.
+
+\begin{tcolorbox}[notebox, title={תקציר ההרצאה הקודמת}]
+\begin{itemize}
+  \item \textbf{אנרגיה קינטית:} \quad \textenglish{$E_k = \tfrac{1}{2} m v^2$}.
+  \item \textbf{עבודה (הגדרה):} אינטגרל מסלולי של הכוח,
+        \[
+          W = \int_{\hvec{r}_1}^{\hvec{r}_2} \hvec{F}\cdot d\hvec{r}
+            = \int \bigl(F_x\,dx + F_y\,dy + F_z\,dz\bigr).
+        \]
+  \item \textbf{הספק:} \quad
+        \textenglish{$W = \displaystyle\int_{t_1}^{t_2} P\,dt
+                          = \int \hvec{F}\cdot\hvec{v}\,dt
+                          = \int \hvec{F}\cdot d\hvec{r}$}.
+  \item \textbf{משפט עבודה--אנרגיה:} עבודת הכוח השקול שווה לשינוי האנרגיה הקינטית,
+        \[
+          W_{\text{שקול}} = \Delta E_k = E_{k,2} - E_{k,1}.
+        \]
+\end{itemize}
+\end{tcolorbox}
+
+% ============================================================
+\section*{1. תלות העבודה במסלול --- דוגמה מרכזית}
+% ============================================================
+
+\subsection*{1.1 הצגת הבעיה}
+
+נתון כוח התלוי במיקום:
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{F}(x,y,z) = \alpha\,x^2 y\,\hat{x} + \beta\,x\,\hat{y},
+  \qquad
+  \alpha = 1\;\tfrac{\text{N}}{\text{m}^3},
+  \quad
+  \beta  = 1\;\tfrac{\text{N}}{\text{m}}.
+\]
+\end{tcolorbox}
+
+מבקשים לחשב את עבודת הכוח בין הנקודות
+\[
+  \hvec{r}_1 = \hvec{0},
+  \qquad
+  \hvec{r}_2 = 1\cdot\hat{x} + 1\cdot\hat{y}\;\;[\text{m}].
+\]
+על פי ההגדרה,
+\[
+  W = \int_{\hvec{r}_1}^{\hvec{r}_2} \hvec{F}\cdot d\hvec{r}
+    = \int_0^1 \alpha\,x^2 y\,dx + \int_0^1 \beta\,x\,dy .
+\]
+
+\begin{tcolorbox}[warnbox, title={מה עושים עם זה?}]
+\textbf{ללא ידיעת המסלול לא ניתן להמשיך בחישוב.} באינטגרל הראשון (לפי \textenglish{$x$}) מופיעה הקואורדינטה \textenglish{$y$}, ובשני (לפי \textenglish{$y$}) מופיעה \textenglish{$x$}. כדי לבצע את האינטגרציה חייבים \textbf{משוואת מסלול} --- ביטוי של \textenglish{$y$} כתלות ב-\textenglish{$x$} (ולהפך) --- ולהציבה.
+\end{tcolorbox}
+
+נדגים שני מסלולים שונים המחברים בין אותן שתי נקודות:
+\begin{enumerate}
+  \item הקו הישר \textenglish{$y = x$}.
+  \item הפרבולה \textenglish{$y = x^2$}.
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[scale=3.0, >={Stealth[length=2.5mm]}]
+  % axes
+  \draw[->, thick] (-0.08,0) -- (1.22,0) node[right] {\textenglish{$x$}};
+  \draw[->, thick] (0,-0.08) -- (0,1.22) node[above] {\textenglish{$y$}};
+  % endpoints
+  \fill (0,0)  circle (0.6pt) node[below left]  {\textenglish{$\hvec{r}_1$}};
+  \fill (1,1)  circle (0.6pt) node[above right] {\textenglish{$\hvec{r}_2$}};
+  % straight line y = x
+  \draw[blue, very thick] (0,0) -- (1,1);
+  \node[blue] at (0.40,0.56) {\textenglish{$y=x$}};
+  % parabola y = x^2
+  \draw[red, very thick] plot[domain=0:1, samples=80] (\x,{\x*\x});
+  \node[red] at (0.86,0.55) {\textenglish{$y=x^2$}};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{1.2 מסלול 1 --- הקו הישר \textenglish{$y=x$}}
+
+בקו הישר \textenglish{$y=x$}: באינטגרל לפי \textenglish{$x$} נציב \textenglish{$y=x$}, ובאינטגרל לפי \textenglish{$y$} נציב \textenglish{$x=y$}:
+\[
+  W_1 = \int_0^1 x^2\,(x)\,dx + \int_0^1 (y)\,dy
+      = \int_0^1 x^3\,dx + \int_0^1 y\,dy
+      = \frac{1}{4} + \frac{1}{2}.
+\]
+\begin{tcolorbox}[resultbox]
+\[
+  W_1 = \frac{3}{4}\;\text{J}
+\]
+\end{tcolorbox}
+
+\subsection*{1.3 מסלול 2 --- הפרבולה \textenglish{$y=x^2$}}
+
+בפרבולה \textenglish{$y=x^2$}: באינטגרל לפי \textenglish{$x$} נציב \textenglish{$y=x^2$}, ובאינטגרל לפי \textenglish{$y$} נציב \textenglish{$x=\sqrt{y}=y^{1/2}$}:
+\[
+  W_2 = \int_0^1 x^2\,(x^2)\,dx + \int_0^1 (y^{1/2})\,dy
+      = \int_0^1 x^4\,dx + \int_0^1 y^{1/2}\,dy
+      = \frac{1}{5} + \frac{2}{3}.
+\]
+\begin{tcolorbox}[resultbox]
+\[
+  W_2 = \frac{1}{5} + \frac{2}{3} = \frac{13}{15}\;\text{J}
+\]
+\end{tcolorbox}
+
+\subsection*{1.4 מסקנה}
+
+\[
+  W_1 = \frac{3}{4} = \frac{45}{60},
+  \qquad
+  W_2 = \frac{13}{15} = \frac{52}{60}
+  \qquad\Longrightarrow\qquad
+  W_1 \ne W_2 .
+\]
+
+\begin{tcolorbox}[defbox, title={תלות במסלול}]
+עבור כוח זה \textbf{העבודה תלויה במסלול}: אותן נקודות קצה נתנו עבודות שונות. זוהי תכונה של חלק מהכוחות --- ומכאן ההבחנה היסודית:
+\begin{itemize}
+  \item יש כוחות שעבורם העבודה \textbf{אינה תלויה במסלול} --- \textbf{כוחות משמרים} (\textenglish{conservative}).
+  \item יש כוחות שעבורם העבודה \textbf{תלויה במסלול} --- \textbf{כוחות אי-משמרים} (\textenglish{non-conservative}).
+\end{itemize}
+\end{tcolorbox}
+
+% ============================================================
+\section*{2. כוחות משמרים --- הגדרה ותכונה}
+% ============================================================
+
+\subsection*{2.1 הגדרה}
+
+\begin{tcolorbox}[defbox, title={כוח משמר (\textenglish{Conservative Force})}]
+\textbf{כוח משמר} הוא כוח שעבודתו \textbf{אינה תלויה במסלול} שבין שתי נקודות, אלא רק בנקודות הקצה.
+\end{tcolorbox}
+
+\subsection*{2.2 תכונה: עבודה על מסלול סגור}
+
+\begin{tcolorbox}[resultbox, title={תכונת הכוח המשמר}]
+\[
+  \oint \hvec{F}\cdot d\hvec{r} = 0
+  \qquad\text{(כוח משמר)}
+\]
+העבודה של כוח משמר על \textbf{מסלול סגור} שווה לאפס.
+\end{tcolorbox}
+
+\textbf{הוכחה.} נתבונן בשתי נקודות \textenglish{A} ו-\textenglish{B} ובשני מסלולים המחברים ביניהן: מסלול 1 (עבודה \textenglish{$W_1$}) ומסלול 2 (עבודה \textenglish{$W_2$}).
+
+\begin{center}
+\begin{tikzpicture}[scale=1.3, >={Stealth[length=3mm]}]
+  % endpoints
+  \fill (0,0)   circle (2pt) node[below left]  {\textenglish{A}};
+  \fill (3,1.6) circle (2pt) node[above right] {\textenglish{B}};
+  % path 1 (upper arc) A -> B
+  \draw[blue, very thick, ->] (0,0) .. controls (0.5,1.7) and (1.7,2.05) .. (3,1.6);
+  \node[blue, above] at (1.35,1.95) {\textenglish{$W_1$}};
+  % path 2 (lower arc) A -> B
+  \draw[red, very thick, ->] (0,0) .. controls (1.3,-0.45) and (2.5,0.1) .. (3,1.6);
+  \node[red, below] at (1.6,-0.32) {\textenglish{$W_2$}};
+\end{tikzpicture}
+\end{center}
+
+מאחר שהכוח משמר, העבודה אינה תלויה במסלול, ולכן
+\[
+  W_1 = W_2 .
+\]
+כעת נבנה \textbf{מסלול סגור}: נלך מ-\textenglish{A} ל-\textenglish{B} דרך מסלול 1, ונחזור מ-\textenglish{B} ל-\textenglish{A} דרך מסלול 2 \textbf{בכיוון ההפוך}. עבודת החזרה היא \textenglish{$W_3 = -W_2$} (היפוך כיוון התנועה הופך את סימן העבודה). לכן העבודה על המסלול הסגור:
+\[
+  W_{\text{סגור}} = W_1 + W_3 = W_1 - W_2 = 0 .
+\]
+\hfill$\blacksquare$
+
+% ============================================================
+\section*{3. אנרגיה פוטנציאלית ומשפט עבודה--אנרגיה II}
+% ============================================================
+
+\subsection*{3.1 פירוק הכוח השקול}
+
+נמיין את הכוח השקול לרכיב משמר ולרכיב אי-משמר:
+\begin{tcolorbox}[resultbox]
+\[
+  \hvec{F} = \hvec{F}_C + \hvec{F}_{NC}
+\]
+\end{tcolorbox}
+כאשר \textenglish{$\hvec{F}_C$} הוא סך הכוחות המשמרים ו-\textenglish{$\hvec{F}_{NC}$} סך הכוחות האי-משמרים.
+
+נציב במשפט עבודה--אנרגיה (כרגיל):
+\[
+  W = \int_{\hvec{r}_1}^{\hvec{r}_2}\!\bigl(\hvec{F}_C + \hvec{F}_{NC}\bigr)\cdot d\hvec{r}
+    = K_2 - K_1 ,
+\]
+ולכן
+\[
+  \int_{\hvec{r}_1}^{\hvec{r}_2}\!\hvec{F}_{NC}\cdot d\hvec{r}
+   = (K_2 - K_1) - \int_{\hvec{r}_1}^{\hvec{r}_2}\!\hvec{F}_C\cdot d\hvec{r} .
+\]
+
+\subsection*{3.2 הגדרת האנרגיה הפוטנציאלית}
+
+נגדיר את האנרגיה הפוטנציאלית של הרכיב המשמר באמצעות העבודה שלו:
+
+\begin{tcolorbox}[defbox, title={אנרגיה פוטנציאלית (\textenglish{Potential Energy})}]
+\[
+  U(\hvec{r}_2) - U(\hvec{r}_1)
+   = -\int_{\hvec{r}_1}^{\hvec{r}_2}\!\hvec{F}_C\cdot d\hvec{r}
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox, title={הערה}]
+ההגדרה תקפה \textbf{רק עבור כוח משמר}: היות שהעבודה אינה תלויה במסלול, הביטוי \textenglish{$U(\hvec{r})$} מוגדר היטב כפונקציה של המיקום בלבד. עבור כוח אי-משמר אין אנרגיה פוטנציאלית. כמו כן \textenglish{$U$} מוגדרת עד כדי \textbf{קבוע} (בחירת נקודת הייחוס), שכן רק \textbf{הפרשי} פוטנציאל הם בעלי משמעות פיזיקלית.
+\end{tcolorbox}
+
+\subsection*{3.3 משפט עבודה--אנרגיה II ושימור האנרגיה}
+
+נציב את הגדרת \textenglish{$U$} (כך ש-\textenglish{$-\int \hvec{F}_C\cdot d\hvec{r} = U_2 - U_1$}):
+\[
+  \int_{\hvec{r}_1}^{\hvec{r}_2}\!\hvec{F}_{NC}\cdot d\hvec{r}
+   = (K_2 - K_1) + (U_2 - U_1)
+   = (K_2 + U_2) - (K_1 + U_1).
+\]
+נגדיר את \textbf{האנרגיה המכנית}:
+\begin{tcolorbox}[resultbox, title={אנרגיה מכנית}]
+\[
+  E = K + U
+\]
+\end{tcolorbox}
+
+ומתקבל משפט עבודה--אנרגיה בנוסחה השנייה:
+
+\begin{tcolorbox}[resultbox, title={משפט עבודה--אנרגיה II}]
+\[
+  W_{NC} = \int_{\hvec{r}_1}^{\hvec{r}_2}\!\hvec{F}_{NC}\cdot d\hvec{r}
+         = E_2 - E_1 = \Delta E
+\]
+עבודת הכוחות \textbf{האי-משמרים} שווה לשינוי האנרגיה המכנית.
+\end{tcolorbox}
+
+\begin{tcolorbox}[warnbox, title={מקרה פרטי חשוב ביותר --- שימור האנרגיה}]
+אם \textbf{אין כוחות אי-משמרים} (או שאינם עושים עבודה), אזי \textenglish{$W_{NC} = 0$}, ולכן
+\[
+  \Delta E = 0
+  \qquad\Longrightarrow\qquad
+  E = K + U = \text{const}.
+\]
+\textbf{האנרגיה המכנית נשמרת.} זו בדיוק הסיבה לשם ``כוח משמר'': כוח משמר \emph{שומר} על האנרגיה המכנית --- כאשר האנרגיה הקינטית יורדת, הפוטנציאלית עולה באותו השיעור (והפוך).
+\end{tcolorbox}
+
+% ============================================================
+\section*{4. סיווג הכוחות המוכרים}
+% ============================================================
+
+נסווג את הכוחות המוכרים לנו לשלוש קבוצות: \textbf{משמרים}, \textbf{אי-משמרים}, ו\textbf{כאלה שאינם עושים עבודה}. עבור כל כוח משמר נחשב את האנרגיה הפוטנציאלית שלו, לפי
+\[
+  E_p^{(F)}(\hvec{r}_2) - E_p^{(F)}(\hvec{r}_1)
+   = -\int_{\hvec{r}_1}^{\hvec{r}_2}\!\hvec{F}\cdot d\hvec{r}
+   = -W_{\hvec{r}_1\to\hvec{r}_2}
+   =  W_{\hvec{r}_2\to\hvec{r}_1}.
+\]
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{כוח} & \textbf{סיווג} & \textbf{הערה} \\
+\hline
+כוח הכובד          & משמר      & \textenglish{$E_p = mgh$} \\
+\hline
+מתיחות (חוט)        & אינו עושה עבודה & על המערכת / כשגוף נייח \\
+\hline
+נורמל              & אינו עושה עבודה & ניצב למהירות \\
+\hline
+חיכוך סטטי          & אינו עושה עבודה & נקודת המגע במנוחה \\
+\hline
+חיכוך קינטי         & אי-משמר   & תלוי במסלול \\
+\hline
+התנגדות אוויר (גרר) & אי-משמר   & תלוי במסלול \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection*{4.1 כוח הכובד --- כוח משמר}
+
+\begin{tcolorbox}[notebox, title={למה כל כוח קבוע הוא משמר?}]
+כוח הכובד \textenglish{$\hvec{F} = -mg\,\hat{y}$} הוא \textbf{כוח קבוע}, וכל כוח קבוע הוא משמר: רכיב \textenglish{$x$} של הכוח אינו תלוי ב-\textenglish{$y$} או ב-\textenglish{$z$}, וכך גם יתר הרכיבים --- ולכן העבודה אינה תלויה במסלול.
+\end{tcolorbox}
+
+נחשב את האנרגיה הפוטנציאלית הכבידתית. נבחר ציר \textenglish{$\hat{y}$} כלפי מעלה ונקודת ייחוס \textenglish{$E_p(\hvec{r}_0)=0$}:
+\[
+  E_p(\hvec{r}) = E_p(\hvec{r}_0) - \int_{\hvec{r}_0}^{\hvec{r}}\!\hvec{F}\cdot d\hvec{r}
+   = 0 - \int_{y_0}^{y} (-mg)\,dy
+   = mg\,(y - y_0).
+\]
+\begin{tcolorbox}[resultbox, title={אנרגיה פוטנציאלית כבידתית}]
+\[
+  E_p = mg\,h
+  \qquad (h = y - y_0)
+\]
+\end{tcolorbox}
+
+\subsection*{4.2 כוחות שאינם עושים עבודה}
+
+\begin{tcolorbox}[notebox, title={מתיחות, נורמל וחיכוך סטטי}]
+\begin{itemize}
+  \item \textbf{מתיחות החוט} --- בחוט אידאלי הקושר שני גופים, המתיחות פועלת בכיוונים מנוגדים על שני קצותיו ובאותה היסט:
+        \[
+          W_T = T\,\Delta x + (-T)\,\Delta x = 0 .
+        \]
+  \item \textbf{נורמל} --- ניצב לכיוון התנועה, ולכן \textenglish{$\hvec{N}\cdot d\hvec{r}=0$}:
+        \[
+          W_N = N\,\Delta x + (-N)\,\Delta x = 0 .
+        \]
+  \item \textbf{חיכוך סטטי} --- בגלגול ללא החלקה נקודת המגע נמצאת \textbf{במנוחה רגעית} (\textenglish{$v=0$}), ולכן ההספק שלו מתאפס:
+        \[
+          P = f_s \cdot v = 0
+          \quad\Longrightarrow\quad
+          W_{f_s} = 0 .
+        \]
+\end{itemize}
+\end{tcolorbox}
+
+\textbf{חיכוך קינטי והתנגדות אוויר} הם כוחות \textbf{אי-משמרים}: כיוונם תמיד מנוגד למהירות, ולכן על מסלול סגור העבודה אינה מתאפסת (היא תמיד שלילית) --- ``בורחת'' מהמערכת כחום. עבורם \textbf{אין} אנרגיה פוטנציאלית.
+
+% ============================================================
+\section*{5. דוגמה --- מהירות מקסימלית של מטוטלת}
+% ============================================================
+
+\subsection*{5.1 הצגת הבעיה}
+
+משחררים מטוטלת באורך \textenglish{$L$} \textbf{ממנוחה} מזווית \textenglish{$\theta_0$} מהאנך. בהזנחת התנגדות האוויר --- מהי המהירות \textbf{המקסימלית} שתשיג המטוטלת במהלך תנועתה?
+
+\begin{center}
+\begin{tikzpicture}[scale=1.35, >={Stealth[length=2.5mm]}]
+  % ceiling
+  \fill[pattern=north east lines, pattern color=gray!70] (-0.7,2.4) rectangle (0.7,2.62);
+  \draw[thick] (-0.7,2.4) -- (0.7,2.4);
+  \fill (0,2.4) circle (1.2pt);
+  % vertical dashed
+  \draw[gray!70, dashed] (0,2.4) -- (0,0.30);
+  % string at theta0 = 35 deg, L = 2.0  -> bob (1.147,0.762)
+  \draw[thick] (0,2.4) -- (1.147,0.762);
+  \node at (0.46,1.66) {\textenglish{$L$}};
+  % bob (released position)
+  \shade[ball color=black] (1.147,0.762) circle (5pt);
+  % bob at lowest point (faint)
+  \draw[fill=gray!30] (0,0.40) circle (5pt);
+  % angle arc (downward vertical -> string)
+  \draw[->] (0,1.55) arc (270:305:0.85);
+  \node at (0.33,1.50) {\textenglish{$\theta_0$}};
+  % height h
+  \draw[gray, dotted] (1.147,0.762) -- (1.80,0.762);
+  \draw[gray, dotted] (0,0.40) -- (1.80,0.40);
+  \draw[<->, gray] (1.62,0.762) -- (1.62,0.40);
+  \node[gray, right] at (1.66,0.58) {\textenglish{$h = L(1-\cos\theta_0)$}};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{5.2 הדרך הקשה --- משוואת התנועה}
+
+\begin{tcolorbox}[warnbox, title={למה לא לפתור ישירות?}]
+שימוש בחוק השני של ניוטון בכיוון המשיק נותן את משוואת התנועה
+\[
+  -mg\sin\theta = mL\,\ddot{\theta}.
+\]
+זוהי משוואה דיפרנציאלית \textbf{לא ליניארית מסדר שני} (בגלל \textenglish{$\sin\theta$}). אין לנו פתרון אנליטי נוח, ולכן \textbf{לא נוכל} להמשיך בדרך זו בקלות.
+\end{tcolorbox}
+
+\subsection*{5.3 הדרך הקלה --- שימור אנרגיה}
+
+הכוחות הפועלים על המטוטלת הם:
+\begin{itemize}
+  \item \textbf{כוח הכובד} --- כוח משמר.
+  \item \textbf{מתיחות החוט} --- ניצבת תמיד למהירות, \textbf{אינה עושה עבודה}.
+\end{itemize}
+מאחר שאין כוח אי-משמר העושה עבודה --- \textbf{האנרגיה המכנית נשמרת}. האנרגיה הפוטנציאלית מינימלית בנקודה הנמוכה ביותר, ולכן שם תתקבל המהירות המקסימלית. נבחר \textenglish{$E_p = 0$} בנקודה הנמוכה ביותר במסלול.
+
+\textbf{אנרגיה התחלתית} (במנוחה בזווית \textenglish{$\theta_0$}, בגובה \textenglish{$h = L(1-\cos\theta_0)$}):
+\[
+  E_i = E_k + E_p = 0 + mg\,L\,(1 - \cos\theta_0).
+\]
+\textbf{אנרגיה בנקודה הנמוכה ביותר} (\textenglish{$E_p = 0$}, מהירות מקסימלית):
+\[
+  E_f = E_k + E_p = \tfrac{1}{2} m v^2 + 0.
+\]
+משימור האנרגיה \textenglish{$E_i = E_f$}:
+\[
+  \tfrac{1}{2} m v^2 = mg\,L\,(1 - \cos\theta_0).
+\]
+\begin{tcolorbox}[resultbox, title={מהירות מקסימלית של מטוטלת}]
+\[
+  v_{\max} = \sqrt{\,2 g L\,(1 - \cos\theta_0)\,}
+\]
+\end{tcolorbox}
+
+\begin{tcolorbox}[notebox, title={המסר}]
+מה ש``נתקע'' בפתרון ישיר של משוואת התנועה נפתר \textbf{בשורה אחת} בעזרת שימור אנרגיה. זהו כוחה של גישת האנרגיה: כאשר רוצים גודל \emph{סקלרי} (מהירות בנקודה) ואין צורך בתלות המלאה בזמן --- שימור האנרגיה לרוב הדרך הקצרה.
+\end{tcolorbox}
+
+\subsection*{5.4 החלפת אנרגיה לאורך התנועה}
+
+הגרף הבא מראה כיצד האנרגיה הקינטית והפוטנציאלית מתחלפות זו בזו לאורך הנדנוד, בעוד \textbf{הסכום} (האנרגיה המכנית) נשאר קבוע. הציר האנכי במונחי \textenglish{$mgL$}, והדוגמה עבור \textenglish{$\theta_0 = 1\,\text{rad}$}:
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=11cm, height=6cm,
+  xlabel={\textenglish{$\theta$ [rad]}},
+  ylabel={\textenglish{Energy $[\,mgL\,]$}},
+  domain=-1:1, samples=120,
+  axis lines=left,
+  xmin=-1.05, xmax=1.05, ymin=0, ymax=0.55,
+  grid=both, grid style={gray!20},
+  legend pos=south east,
+]
+\addplot[blue, very thick]        {1 - cos(deg(x))};
+\addlegendentry{\textenglish{$E_p = mgL(1-\cos\theta)$}}
+\addplot[red, very thick]         {cos(deg(x)) - 0.5403};
+\addlegendentry{\textenglish{$E_k$}}
+\addplot[black, dashed, thick]    {0.4597};
+\addlegendentry{\textenglish{$E = E_k + E_p$ (const)}}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+% ============================================================
+\section*{6. דוגמה --- מהירות מקסימלית של מכונית}
+% ============================================================
+
+\subsection*{6.1 הצגת הבעיה}
+
+מכונית שההספק המקסימלי של מנועה הוא \textenglish{$P$}, נתונה להשפעת התנגדות אוויר מן הצורה \textenglish{$\hvec{f} = -c v^2\,\hat{v}$}. מהי מהירותה המקסימלית, ומהי צריכת הדלק לק``מ במהירות זו?
+
+\begin{tcolorbox}[notebox, title={נתונים}]
+\begin{itemize}
+  \item הספק מקסימלי: \textenglish{$P = 100\;\text{hp} \approx 74.6\;\text{kW}$}.
+  \item מקדם גרר: \textenglish{$c = 0.5\;\tfrac{\text{kg}}{\text{m}}$}.
+  \item תכולת אנרגיה של דלק: \textenglish{$40\;\text{MJ}/\ell$} (מגה-ג'אול לליטר).
+  \item ניצולת המנוע: \textbf{20\%} (יתר האנרגיה הופכת לחום).
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{6.2 דיאגרמת כוחות}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0, >={Stealth[length=3mm]}]
+  % ground
+  \fill[pattern=north east lines, pattern color=gray!60] (-0.6,-0.2) rectangle (5.4,0);
+  \draw[thick] (-0.6,0) -- (5.4,0);
+  % car body
+  \draw[thick, fill=red!25, rounded corners=3pt] (1.4,0.25) rectangle (3.4,0.9);
+  \draw[thick, fill=red!25, rounded corners=6pt] (1.9,0.9) rectangle (2.9,1.3);
+  \fill[black] (1.9,0.25) circle (4.5pt);
+  \fill[black] (2.9,0.25) circle (4.5pt);
+  % forces
+  \draw[->, very thick, blue]        (2.4,1.3)  -- (2.4,2.35) node[above] {\textenglish{$N$}};
+  \draw[->, very thick, blue]        (2.4,0.25) -- (2.4,-1.0) node[below] {\textenglish{$mg$}};
+  \draw[->, very thick, green!55!black] (3.4,0.6) -- (4.8,0.6) node[right] {\textenglish{$f_s$ (drive)}};
+  \draw[->, very thick, red]         (1.4,0.6)  -- (0.0,0.6) node[left]  {\textenglish{$c v^2$ (drag)}};
+\end{tikzpicture}
+\end{center}
+
+הכוחות: כוח הכובד, נורמל וחיכוך סטטי \textbf{אינם עושים עבודה}. כוח התנגדות האוויר \textbf{עושה עבודה}, וההספק שלו \textenglish{$P_{\text{drag}} = \hvec{f}\cdot\hvec{v} = -c v^2 \cdot v = -c v^3$}. בנוסף, הכוח הפנימי של המנוע עושה עבודה בהספק מקסימלי נתון \textenglish{$P$}.
+
+\subsection*{6.3 פתרון --- מאזן הספקים}
+
+במהירות המקסימלית התאוצה אפס, ולכן אין שינוי באנרגיה הקינטית --- עבודת הכוח השקול אפס, וכך גם סך ההספקים:
+\[
+  P_{\text{net}} = P - c v^3 = 0 .
+\]
+\begin{tcolorbox}[resultbox, title={מהירות מקסימלית}]
+\[
+  v_{\max} = \sqrt[3]{\dfrac{P}{c}}
+\]
+\end{tcolorbox}
+
+הצבת הנתונים:
+\[
+  v_{\max} = \sqrt[3]{\frac{74600}{0.5}}
+           = \sqrt[3]{1.49\times10^{5}}
+           \approx 53\;\tfrac{\text{m}}{\text{s}}
+           \;\approx\; 50\;\tfrac{\text{m}}{\text{s}}\ \text{(מעוגל)}.
+\]
+
+\subsection*{6.4 צריכת דלק לק``מ}
+
+לנסיעה של \textenglish{$1000\;\text{m}$} במהירות \textenglish{$50\;\tfrac{\text{m}}{\text{s}}$} דרוש זמן
+\[
+  t = \frac{1000}{50} = 20\;\text{s}.
+\]
+העבודה שעושה המנוע בזמן זה:
+\[
+  W = P\cdot t = 74600 \times 20 \approx 1.5\;\text{MJ}.
+\]
+האנרגיה הזמינה בליטר דלק (לאחר ניצולת \textenglish{$20\%$}):
+\[
+  40\;\text{MJ}/\ell \times 0.20 = 8\;\text{MJ}/\ell .
+\]
+לכן צריכת הדלק לק``מ:
+\[
+  \frac{1.5\;\text{MJ}}{8\;\text{MJ}/\ell} \approx 0.2\;\ell
+  \qquad\Longrightarrow\qquad
+  \approx 5\;\tfrac{\text{km}}{\ell}.
+\]
+
+\begin{tcolorbox}[warnbox, title={המסקנה}]
+\textenglish{$\approx 5\;\text{km}/\ell$} --- \textbf{יקר!} הצריכה גדלה כ-\textenglish{$v^3$} (ההספק נגד הגרר), ולכן \textbf{עדיף לנסוע הרבה יותר לאט}: הורדת המהירות חוסכת דלק בקצב חד.
+\end{tcolorbox}
+
+\subsection*{6.5 אימות נומרי בפייתון}
+
+\noindent\textbf{חישוב המהירות המקסימלית וצריכת הדלק:}
+
+\begin{LTR}
+\begin{lstlisting}[style=pycode]
+# Maximum speed and fuel economy from a power balance: P = c v^3
+P  = 100 * 745.7    # engine power [W]  (100 hp)
+c  = 0.5            # drag coefficient [kg/m]
+E_fuel = 40e6       # energy content of fuel [J/liter]
+eff = 0.20          # engine efficiency
+
+v_max = (P / c) ** (1/3)            # P - c v^3 = 0  ->  v = (P/c)^(1/3)
+print(f"v_max = {v_max:.1f} m/s")   # ~ 53 m/s
+
+# Fuel for 1 km at v_max
+d = 1000.0                          # distance [m]
+t = d / v_max                       # travel time [s]
+W = P * t                           # engine work over the km [J]
+E_per_liter = E_fuel * eff          # usable energy per liter [J]
+liters = W / E_per_liter            # liters for 1 km
+print(f"t = {t:.1f} s,  W = {W/1e6:.2f} MJ")
+print(f"fuel = {liters:.2f} L/km  ->  {1/liters:.1f} km/L")
+\end{lstlisting}
+\end{LTR}
+
+% ============================================================
+\section*{סיכום: מבט-על}
+% ============================================================
+
+\begin{tcolorbox}[warnbox, title={נקודות מפתח לזכור}]
+\begin{enumerate}
+  \item \textbf{תלות במסלול:} העבודה של חלק מהכוחות תלויה במסלול. דוגמה: \textenglish{$\hvec{F}=\alpha x^2 y\hat{x}+\beta x\hat{y}$} נתן \textenglish{$W_1=\tfrac{3}{4}$} לעומת \textenglish{$W_2=\tfrac{13}{15}$}.
+  \item \textbf{כוח משמר:} העבודה אינה תלויה במסלול, ושקולה לתכונה \textenglish{$\oint \hvec{F}\cdot d\hvec{r} = 0$}.
+  \item \textbf{אנרגיה פוטנציאלית:} \textenglish{$U(\hvec{r}_2)-U(\hvec{r}_1) = -\int_{\hvec{r}_1}^{\hvec{r}_2}\hvec{F}_C\cdot d\hvec{r}$}; כבידה: \textenglish{$E_p = mgh$}.
+  \item \textbf{אנרגיה מכנית:} \textenglish{$E = K + U$}, ומשפט עבודה--אנרגיה II: \textenglish{$W_{NC} = \Delta E$}.
+  \item \textbf{שימור האנרגיה:} אם אין כוחות אי-משמרים העושים עבודה --- \textenglish{$E = K + U = \text{const}$}.
+  \item \textbf{סיווג:} כובד --- משמר; מתיחות/נורמל/חיכוך סטטי --- אינם עושים עבודה; חיכוך קינטי/גרר --- אי-משמרים.
+  \item \textbf{כוח הגישה:} מטוטלת --- \textenglish{$v_{\max}=\sqrt{2gL(1-\cos\theta_0)}$} בשורה אחת; מכונית --- \textenglish{$v_{\max}=\sqrt[3]{P/c}$} ממאזן הספקים.
+\end{enumerate}
+\end{tcolorbox}
+
+\end{document}
